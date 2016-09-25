@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Handlers.Connections
 {
-    public interface IServiceConnection
+    public interface IServerConnection
     {
         event EventHandler<MessageModel> NewMessage;
-        void Send(MessageModel message);
-        MessageModel Receive();
+        MessageModel ReceiveNewMessage();
+        void SendRSAKey();
+        void StartServer();
+        void StopServer();
     }
 }

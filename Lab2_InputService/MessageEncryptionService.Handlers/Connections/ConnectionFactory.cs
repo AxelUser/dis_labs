@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessageEncryptionService.Handlers.Connections.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,11 +12,11 @@ namespace MessageEncryptionService.Handlers.Connections
         public const string DEF_HOST = "localhost";
         public const int DEF_PORT = 8888;        
 
-        public IServiceConnection CreateConnection(ConnectionTypes type)
+        public IServerConnection CreateConnection(RoleTypes roleType, ConnectionTypes conType)
         {
-            IServiceConnection connection = null;
+            IServerConnection connection = null;
 
-            switch (type)
+            switch (conType)
             {
                 case ConnectionTypes.Sockets:
                     //connection = new SocketConnection(DEF_HOST, DEF_PORT, 10);

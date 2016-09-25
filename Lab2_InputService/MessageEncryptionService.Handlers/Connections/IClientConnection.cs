@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Handlers.Connections
 {
-    public interface IEncryptionServiceServer
+    public interface IClientConnection
     {
-        event EventHandler<MessageModel> NewMessageReceived;
-        void Start();
-        void Stop();
+        bool Connect();
+        void Send(byte[] message);
+        byte[] Receive();
     }
 }
