@@ -54,6 +54,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -75,6 +78,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MessageEncryptionService.Handlers\MessageEncryptionService.Handlers.csproj">
+      <Project>{128ae24e-1d4c-489c-8bfd-3810c277aa95}</Project>
+      <Name>MessageEncryptionService.Handlers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MessageEncryptionService.Model\MessageEncryptionService.Model.csproj">
+      <Project>{9f372ec0-8f3a-4130-a326-ac146e380fa7}</Project>
+      <Name>MessageEncryptionService.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

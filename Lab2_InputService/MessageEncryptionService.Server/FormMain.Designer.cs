@@ -28,12 +28,33 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.listBoxLogs = new System.Windows.Forms.ListBox();
+            this.SuspendLayout();
+            // 
+            // listBoxLogs
+            // 
+            this.listBoxLogs.FormattingEnabled = true;
+            this.listBoxLogs.Location = new System.Drawing.Point(12, 12);
+            this.listBoxLogs.Name = "listBoxLogs";
+            this.listBoxLogs.Size = new System.Drawing.Size(260, 238);
+            this.listBoxLogs.TabIndex = 0;
+            // 
+            // FormMain
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.Controls.Add(this.listBoxLogs);
+            this.Name = "FormMain";
+            this.Text = "Service Server";
+            this.Load += new System.EventHandler(this.FormMain_Load);
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private System.Windows.Forms.ListBox listBoxLogs;
     }
 }
 

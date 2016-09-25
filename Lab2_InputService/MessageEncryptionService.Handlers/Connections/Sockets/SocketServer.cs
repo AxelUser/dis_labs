@@ -41,11 +41,17 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             listener.Start(maxConnections);
             proceed = true;
+            listeningThread = new Thread(new ThreadStart(Listen));
+            listeningThread.Start();
         }
 
         public void StopServer()
         {
             proceed = false;
+            while(listeningThread.ThreadState == ThreadState.Running)
+            {
+                Thread.Sleep(5000);
+            }
             listener.Stop();
         }
 

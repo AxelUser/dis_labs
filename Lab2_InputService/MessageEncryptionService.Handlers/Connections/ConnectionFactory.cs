@@ -1,4 +1,5 @@
-﻿using MessageEncryptionService.Handlers.Connections.Types;
+﻿using MessageEncryptionService.Handlers.Connections.Sockets;
+using MessageEncryptionService.Handlers.Connections.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,23 +11,30 @@ namespace MessageEncryptionService.Handlers.Connections
     public class ConnectionFactory
     {
         public const string DEF_HOST = "localhost";
-        public const int DEF_PORT = 8888;        
+        public const int DEF_PORT = 8888;                
 
-        public IServerConnection CreateConnection(RoleTypes roleType, ConnectionTypes conType)
+        public static IServerConnection CreateServerConnection(ConnectionTypes conType)
         {
-            IServerConnection connection = null;
-
+            IServerConnection server = null;
             switch (conType)
             {
                 case ConnectionTypes.Sockets:
-                    //connection = new SocketConnection(DEF_HOST, DEF_PORT, 10);
-                    break;
-                case ConnectionTypes.MSMQ:
-                    //connection = new MSMQConnection();
+                    server = new SocketServer(DEF_HOST, DEF_PORT);
                     break;
             }
+            return server;
+        }
 
-            return connection;
+        public static IClientConnection CreateClientConnection(ConnectionTypes conType)
+        {
+            IClientConnection client = null;
+            switch (conType)
+            {
+                case ConnectionTypes.Sockets:
+                    client = new SocketClient(DEF_HOST, DEF_PORT);
+                    break;
+            }
+            return client;
         }
     }
 }
