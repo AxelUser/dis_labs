@@ -66,12 +66,20 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     NetworkStream socketStream = client.GetStream();
                     using (BinaryReader reader = new BinaryReader(socketStream))
                     {
-                        var msg = reader.ReadString();
-                        history.Add(msg);
+                        var msgText = reader.ReadString();
+                        history.Add(msgText);                        
                     }
                     using (BinaryWriter writer = new BinaryWriter(socketStream))
                     {
-                        writer.Write("Сообщение получено.");
+                        MessageModel msg = new MessageModel(Types.MessageTypes.Reply)
+                        {
+                            Body = "Сообщение получено."
+                        };
+                        writer.Write(msg.Body);
+                        if (NewMessage != null)
+                        {
+                            NewMessage(this, msg);
+                        }
                     }
                 }
                 finally

@@ -33,6 +33,10 @@ namespace MessageEncryptionService.Client
         private void FormMain_Load(object sender, EventArgs e)
         {
             client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
+            if (!client.Connect())
+            {
+                MessageBox.Show("ошибка подключения клиента к серверу.");
+            }
         }
     }
 }

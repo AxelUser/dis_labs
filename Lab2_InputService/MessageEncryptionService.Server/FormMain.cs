@@ -24,7 +24,13 @@ namespace MessageEncryptionService.Server
         private void FormMain_Load(object sender, EventArgs e)
         {
             server = ConnectionFactory.CreateServerConnection(ConnectionTypes.Sockets);
+            server.NewMessage += Server_NewMessage;
             server.StartServer();
+        }
+
+        private void Server_NewMessage(object sender, MessageModel e)
+        {
+            listBoxLogs.Items.Add(e.Body);
         }
     }
 }
