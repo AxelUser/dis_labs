@@ -36,7 +36,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 return false;
             }
         }
-        public byte[] Receive()
+        public MessageModel Receive()
         {
             string data = "";
             using(var socketStream = client.GetStream())
@@ -46,15 +46,18 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     data = reader.ReadString();
                 }
             }
-            return Encoding.Unicode.GetBytes(data);
+            return new MessageModel(Types.MessageTypes.Reply)
+            {
+                Body = data
+            };
         }
-        public void Send(byte[] message)
+        public void Send(MessageModel message)
         {
             using (var socketStream = client.GetStream())
             {
                 using (BinaryWriter writer = new BinaryWriter(socketStream))
                 {
-                    string data = Encoding.Unicode.GetString(message);
+                    string data = message.Body;
                     writer.Write(data);
                 }
             }

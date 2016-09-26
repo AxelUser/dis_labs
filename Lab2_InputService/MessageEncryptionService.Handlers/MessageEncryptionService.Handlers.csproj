@@ -45,6 +45,7 @@
     <Compile Include="Connections\Sockets\SocketServer.cs" />
     <Compile Include="Connections\Types\ConnectionTypes.cs" />
     <Compile Include="Connections\ConnectionFactory.cs" />
+    <Compile Include="Connections\Types\MessageTypes.cs" />
     <Compile Include="Connections\Types\RoleTypes.cs" />
     <Compile Include="Data\DataTransformHandler.cs" />
     <Compile Include="Connections\IServerConnection.cs" />

@@ -39,6 +39,7 @@
             this.btnSend.TabIndex = 0;
             this.btnSend.Text = "Send";
             this.btnSend.UseVisualStyleBackColor = true;
+            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
             // 
             // FormMain
             // 
@@ -48,6 +49,7 @@
             this.Controls.Add(this.btnSend);
             this.Name = "FormMain";
             this.Text = "Service Client";
+            this.Load += new System.EventHandler(this.FormMain_Load);
             this.ResumeLayout(false);
 
         }
