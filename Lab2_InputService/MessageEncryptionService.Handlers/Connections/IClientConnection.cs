@@ -9,7 +9,6 @@ namespace MessageEncryptionService.Handlers.Connections
     public interface IClientConnection
     {
         bool Connect();
-        void Send(MessageModel message);
-        MessageModel Receive();
+        MessageModel Send(MessageModel message);
     }
 }

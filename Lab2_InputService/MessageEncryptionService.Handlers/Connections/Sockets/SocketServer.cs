@@ -13,16 +13,18 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
     public class SocketServer : IServerConnection
     {
         public event EventHandler<MessageModel> NewMessage;
+
         private TcpListener listener;
         private int maxConnections;
-        private Thread listeningThread;
-        private bool proceed;
+        private Task listening;
+        private CancellationTokenSource cancelSource;
         private List<string> history;
 
         public SocketServer(string domain, int port, int maxConnections = 10)
         {
             this.maxConnections = maxConnections;
             history = new List<string>();
+            cancelSource = new CancellationTokenSource();
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
             listener = new TcpListener(ipAdress, port);
         }
@@ -39,54 +41,63 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public void StartServer()
         {
+            CancellationToken ct = cancelSource.Token;
+
+            var progressHandler = new Progress<MessageModel>(value =>
+            {
+                NewMessage?.Invoke(this, value);
+            });
             listener.Start(maxConnections);
-            proceed = true;
-            listeningThread = new Thread(new ThreadStart(Listen));
-            listeningThread.Start();
+
+            listening = Listen(progressHandler, ct);
+            listening.Start();
         }
 
         public void StopServer()
         {
-            proceed = false;
-            while(listeningThread.ThreadState == ThreadState.Running)
-            {
-                Thread.Sleep(5000);
-            }
+            cancelSource.Cancel();
+            listening.Wait();
             listener.Stop();
         }
 
-        private void Listen()
+        private Task Listen(IProgress<MessageModel> progress, CancellationToken ct)
         {
-            while (proceed)
+            Task listenigTask = new Task(() =>
             {
-                TcpClient client = null;
-                try
+                while (!ct.IsCancellationRequested)
                 {
-                    client = listener.AcceptTcpClient();
-                    NetworkStream socketStream = client.GetStream();
-                    using (BinaryReader reader = new BinaryReader(socketStream))
+                    using (TcpClient client = listener.AcceptTcpClient())
                     {
-                        var msgText = reader.ReadString();
-                        history.Add(msgText);                        
-                    }
-                    using (BinaryWriter writer = new BinaryWriter(socketStream))
-                    {
-                        MessageModel msg = new MessageModel(Types.MessageTypes.Reply)
+                        BinaryReader reader = null;
+                        BinaryWriter writer = null;
+                        NetworkStream socketStream = null;
+                        try
                         {
-                            Body = "Сообщение получено."
-                        };
-                        writer.Write(msg.Body);
-                        if (NewMessage != null)
+                            socketStream = client.GetStream();
+                            reader = new BinaryReader(socketStream);
+                            writer = new BinaryWriter(socketStream);
+
+                            var msgText = reader.ReadString();
+                            history.Add(msgText);
+
+                            MessageModel msg = new MessageModel(Types.MessageTypes.Reply)
+                            {
+                                Body = "Сообщение получено."
+                            };
+                            writer.Write(msg.Body);
+                            writer.Flush();
+                            progress.Report(msg);
+                        }
+                        finally
                         {
-                            NewMessage(this, msg);
+                            socketStream?.Close();
+                            reader?.Close();
+                            writer?.Close();
                         }
                     }
                 }
-                finally
-                {
-                    client.Close();
-                }
-            }
+            });
+            return listenigTask;
         }
     }
 }

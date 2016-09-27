@@ -13,22 +13,21 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
     public class SocketClient : IClientConnection
     {
         private TcpClient client;
-        string domain;
+        private IPAddress ipAdress;
         int port;
 
-        public SocketClient(string domain, int port)
+        public SocketClient(string ip, int port)
         {
-            IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
+            ipAdress = IPAddress.Parse(ip);
+            var s = ipAdress.ToString();
             client = new TcpClient();
-            this.domain = domain;
             this.port = port;
         }
         public bool Connect()
         {
             try
             {
-                IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
-                client.Connect(domain, port);
+                client.Connect(ipAdress, port);
                 return true;
             }
             catch
@@ -36,31 +35,36 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 return false;
             }
         }
-        public MessageModel Receive()
+
+        public MessageModel Send(MessageModel message)
         {
-            string data = "";
-            using(var socketStream = client.GetStream())
+            MessageModel reply = null;
+            if (Connect())
             {
-                using(BinaryReader reader = new BinaryReader(socketStream))
+                using(var socketStream = client.GetStream())
                 {
-                    data = reader.ReadString();
+                    BinaryWriter writer = null;
+                    BinaryReader reader = null;
+                    try
+                    {
+                        writer = new BinaryWriter(socketStream);
+                        reader = new BinaryReader(socketStream);
+                        string data = message.Body;
+                        writer.Write(data);
+                        writer.Flush();
+                        reply = new MessageModel(Types.MessageTypes.Reply)
+                        {
+                            Body = reader.ReadString()
+                        };
+                    }
+                    finally
+                    {
+                        writer.Close();
+                        reader.Close();
+                    }
                 }
             }
-            return new MessageModel(Types.MessageTypes.Reply)
-            {
-                Body = data
-            };
-        }
-        public void Send(MessageModel message)
-        {
-            using (var socketStream = client.GetStream())
-            {
-                using (BinaryWriter writer = new BinaryWriter(socketStream))
-                {
-                    string data = message.Body;
-                    writer.Write(data);
-                }
-            }
-        }
+            return reply;
+        }        
     }
 }
