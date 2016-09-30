@@ -47,6 +47,7 @@
             this.Controls.Add(this.listBoxLogs);
             this.Name = "FormMain";
             this.Text = "Service Server";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormMain_FormClosed);
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.ResumeLayout(false);
 

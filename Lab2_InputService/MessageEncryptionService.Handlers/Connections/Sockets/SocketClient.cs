@@ -16,13 +16,16 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private IPAddress ipAdress;
         int port;
 
+        public event EventHandler<string> ConnectionErrorRised;
+
         public SocketClient(string ip, int port)
         {
             ipAdress = IPAddress.Parse(ip);
             var s = ipAdress.ToString();
             client = new TcpClient();
             this.port = port;
-        }
+        }        
+
         public bool Connect()
         {
             try
@@ -39,16 +42,16 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         public MessageModel Send(MessageModel message)
         {
             MessageModel reply = null;
-            if (Connect())
+            if (client.Connected)
             {
-                using(var socketStream = client.GetStream())
+                var socketStream = client.GetStream();
                 {
                     BinaryWriter writer = null;
                     BinaryReader reader = null;
                     try
                     {
-                        writer = new BinaryWriter(socketStream);
-                        reader = new BinaryReader(socketStream);
+                        writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
+                        reader = new BinaryReader(socketStream, Encoding.UTF8, true);
                         string data = message.Body;
                         writer.Write(data);
                         writer.Flush();

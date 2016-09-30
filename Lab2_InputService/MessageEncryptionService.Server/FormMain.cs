@@ -32,5 +32,10 @@ namespace MessageEncryptionService.Server
         {
             listBoxLogs.Items.Add(e.Body);
         }
+
+        private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            server.StopServer();
+        }
     }
 }

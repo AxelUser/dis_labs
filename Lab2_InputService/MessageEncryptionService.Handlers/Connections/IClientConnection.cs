@@ -8,6 +8,7 @@ namespace MessageEncryptionService.Handlers.Connections
 {
     public interface IClientConnection
     {
+        event EventHandler<string> ConnectionErrorRised;
         bool Connect();
         MessageModel Send(MessageModel message);
     }

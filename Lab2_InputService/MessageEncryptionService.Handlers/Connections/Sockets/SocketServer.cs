@@ -74,8 +74,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         try
                         {
                             socketStream = client.GetStream();
-                            reader = new BinaryReader(socketStream);
-                            writer = new BinaryWriter(socketStream);
+                            reader = new BinaryReader(socketStream, Encoding.UTF8, true);
+                            writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
 
                             var msgText = reader.ReadString();
                             history.Add(msgText);
@@ -90,7 +90,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         }
                         finally
                         {
-                            socketStream?.Close();
                             reader?.Close();
                             writer?.Close();
                         }
