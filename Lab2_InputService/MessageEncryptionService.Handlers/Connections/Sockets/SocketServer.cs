@@ -16,7 +16,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         private TcpListener listener;
         private int maxConnections;
-        private Task listening;
+        private Task listeningInputConnections;        
         private CancellationTokenSource cancelSource;
         private List<string> history;
 
@@ -49,50 +49,60 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             });
             listener.Start(maxConnections);
 
-            listening = Listen(progressHandler, ct);
-            listening.Start();
+            listeningInputConnections = Listen(progressHandler, ct);
+            listeningInputConnections.Start();
         }
 
         public void StopServer()
         {
             cancelSource.Cancel();
-            listening.Wait();
+            listeningInputConnections.Wait();
             listener.Stop();
         }
 
-        private Task Listen(IProgress<MessageModel> progress, CancellationToken ct)
+        private Task ListenNewConnections(TcpListener listener, CancellationToken ct)
+        {
+            Task listenInputConnections = new Task(() => 
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    TcpClient client = null;
+                    var t = listener.AcceptTcpClientAsync();
+                }
+            });
+            return listenInputConnections;
+        }
+
+        private Task Listen(IProgress<MessageModel> progress, CancellationToken ct, TcpClient clientToListen)
         {
             Task listenigTask = new Task(() =>
             {
                 while (!ct.IsCancellationRequested)
-                {
-                    using (TcpClient client = listener.AcceptTcpClient())
+                {                    
+                    BinaryReader reader = null;
+                    BinaryWriter writer = null;
+                    NetworkStream socketStream = null;
+                    try
                     {
-                        BinaryReader reader = null;
-                        BinaryWriter writer = null;
-                        NetworkStream socketStream = null;
-                        try
-                        {
-                            socketStream = client.GetStream();
-                            reader = new BinaryReader(socketStream, Encoding.UTF8, true);
-                            writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
+                        socketStream = clientToListen.GetStream();
+                        reader = new BinaryReader(socketStream, Encoding.UTF8, true);
+                        writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
 
-                            var msgText = reader.ReadString();
-                            history.Add(msgText);
+                        var msgText = reader.ReadString();
+                        history.Add(msgText);
 
-                            MessageModel msg = new MessageModel(Types.MessageTypes.Reply)
-                            {
-                                Body = "Сообщение получено."
-                            };
-                            writer.Write(msg.Body);
-                            writer.Flush();
-                            progress.Report(msg);
-                        }
-                        finally
+                        MessageModel msg = new MessageModel(Types.MessageTypes.Reply)
                         {
-                            reader?.Close();
-                            writer?.Close();
-                        }
+                            Body = "Сообщение получено."
+                        };
+                        writer.Write(msg.Body);
+                        writer.Flush();
+                        progress.Report(msg);
+                    }
+                    finally
+                    {
+                        reader?.Close();
+                        writer?.Close();
                     }
                 }
             });
