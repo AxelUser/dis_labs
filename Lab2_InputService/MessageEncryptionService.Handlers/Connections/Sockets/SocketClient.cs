@@ -14,7 +14,10 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
     {
         private TcpClient client;
         private IPAddress ipAdress;
+        CancellationTokenSource cts;
         int port;
+
+        Task checkingConnectionTask;
 
         public event EventHandler<string> ConnectionErrorRised;
 
@@ -24,25 +27,51 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             var s = ipAdress.ToString();
             client = new TcpClient();
             this.port = port;
-        }        
+            cts = new CancellationTokenSource();
+        }
 
         public bool Connect()
         {
+            bool connected;
             try
-            {
-                client.Connect(ipAdress, port);
-                return true;
+            {                
+                client.Connect(ipAdress, port);                
+                connected = true;
             }
             catch
             {
-                return false;
+                connected = false;
             }
+            if (connected)
+            {
+                CancellationToken ct = cts.Token;
+                StartCheckingConnection(ct);
+            }
+            return connected;
         }
+
+        public bool CheckConnection()
+        {
+            bool connected = false;
+            if (client.Connected && client.Client.Poll(0, SelectMode.SelectRead))
+            {
+                byte[] buff = new byte[1];
+                if (client.Client.Receive(buff, SocketFlags.Peek) == 0)
+                {
+                    connected = false;
+                }
+                else
+                {
+                    connected = true;
+                }
+            }
+            return connected;
+        }        
 
         public MessageModel Send(MessageModel message)
         {
             MessageModel reply = null;
-            if (client.Connected)
+            if (CheckConnection())
             {
                 var socketStream = client.GetStream();
                 {
@@ -68,6 +97,32 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 }
             }
             return reply;
-        }        
+        }
+
+
+        private void StartCheckingConnection(CancellationToken ct)
+        {
+            IProgress<string> progressHandler = new Progress<string>((message) => 
+            {
+                ConnectionErrorRised?.Invoke(this, message);
+            });
+            checkingConnectionTask = new Task(() => 
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    if (!CheckConnection())
+                    {
+                        progressHandler.Report("Нет соединения с сервером.");
+                    }
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                }
+            });
+        }
+
+        public void Disconnect()
+        {
+            cts.Cancel();
+            checkingConnectionTask.Wait(TimeSpan.FromSeconds(10));
+        }
     }
 }

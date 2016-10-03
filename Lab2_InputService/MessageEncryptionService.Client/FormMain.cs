@@ -15,6 +15,7 @@ namespace MessageEncryptionService.Client
     public partial class FormMain : Form
     {
         private IClientConnection client;
+        private bool connected;
         public FormMain()
         {
             InitializeComponent();
@@ -32,10 +33,22 @@ namespace MessageEncryptionService.Client
 
         private void FormMain_Load(object sender, EventArgs e)
         {
+            connected = true;
             client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
+
+            client.ConnectionErrorRised += (s, msg) =>
+            {
+                if (connected)
+                {
+                    MessageBox.Show(msg);
+                    connected = false;
+                    client.Disconnect();
+                }
+            };
+
             if (!client.Connect())
             {
-                MessageBox.Show("ошибка подключения клиента к серверу.");
+                MessageBox.Show("Ошибка подключения клиента к серверу.");
             }
         }
     }
