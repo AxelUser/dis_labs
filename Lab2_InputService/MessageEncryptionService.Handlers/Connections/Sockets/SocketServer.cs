@@ -19,6 +19,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private Task listeningInputConnections;        
         private CancellationTokenSource cancelSource;
         private List<string> history;
+        private List<Task> activeConnectionListeners;
 
         public SocketServer(string domain, int port, int maxConnections = 10)
         {
@@ -27,6 +28,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             cancelSource = new CancellationTokenSource();
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
             listener = new TcpListener(ipAdress, port);
+            activeConnectionListeners = new List<Task>();
         }
 
         public MessageModel ReceiveNewMessage()
@@ -49,7 +51,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             });
             listener.Start(maxConnections);
 
-            listeningInputConnections = Listen(progressHandler, ct);
+            listeningInputConnections = ListenNewConnections(progressHandler, ct, listener);
             listeningInputConnections.Start();
         }
 
@@ -57,31 +59,54 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             cancelSource.Cancel();
             listeningInputConnections.Wait();
+            activeConnectionListeners.Clear();
             listener.Stop();
+            
         }
 
-        private Task ListenNewConnections(TcpListener listener, CancellationToken ct)
+        private Task ListenNewConnections(Progress<MessageModel> progressHandler, CancellationToken ct, TcpListener listener)
         {
             Task listenInputConnections = new Task(() => 
             {
                 while (!ct.IsCancellationRequested)
                 {
                     TcpClient client = null;
-                    var t = listener.AcceptTcpClientAsync();
+                    var getClient = listener.AcceptTcpClientAsync();
+                    try
+                    {
+                        getClient.Wait(ct);
+                    }
+                    catch(Exception e)
+                    {
+                        //пока просто проигнорирую
+                    }
+                    finally
+                    {
+                        activeConnectionListeners.RemoveAll(t => t.IsCompleted);
+                    }
+                    if (getClient.IsCompleted)
+                    {
+                        client = getClient.Result;
+                        Task handleClientTask = HandleClient(progressHandler, ct, client);
+                        handleClientTask.Start();
+                        activeConnectionListeners.Add(handleClientTask);
+                    }
                 }
+                Task.WaitAll(activeConnectionListeners.ToArray());                
             });
             return listenInputConnections;
         }
 
-        private Task Listen(IProgress<MessageModel> progress, CancellationToken ct, TcpClient clientToListen)
+        private Task HandleClient(IProgress<MessageModel> progress, CancellationToken ct, TcpClient clientToListen)
         {
-            Task listenigTask = new Task(() =>
+            Task listeningTask = new Task(() =>
             {
+                BinaryReader reader = null;
+                BinaryWriter writer = null;
+                NetworkStream socketStream = null;
                 while (!ct.IsCancellationRequested)
                 {                    
-                    BinaryReader reader = null;
-                    BinaryWriter writer = null;
-                    NetworkStream socketStream = null;
+
                     try
                     {
                         socketStream = clientToListen.GetStream();
@@ -105,8 +130,9 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         writer?.Close();
                     }
                 }
+                socketStream.Close();
             });
-            return listenigTask;
+            return listeningTask;
         }
     }
 }
