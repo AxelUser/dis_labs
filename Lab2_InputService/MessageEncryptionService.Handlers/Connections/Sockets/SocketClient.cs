@@ -52,20 +52,14 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public bool CheckConnection()
         {
-            bool connected = false;
-            if (client.Connected && client.Client.Poll(0, SelectMode.SelectRead))
+            bool connected = client.Connected && client.Client.Poll(1000, SelectMode.SelectRead);
+            if (connected)
             {
                 byte[] buff = new byte[1];
-                if (client.Client.Receive(buff, SocketFlags.Peek) == 0)
-                {
-                    connected = false;
-                }
-                else
-                {
-                    connected = true;
-                }
+                connected = client.Client.Receive(buff, SocketFlags.Peek) != 0;
             }
-            return connected;
+            //return connected;
+            return true; //пока оставлю заглушку
         }        
 
         public MessageModel Send(MessageModel message)

@@ -45,13 +45,19 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             CancellationToken ct = cancelSource.Token;
 
-            var progressHandler = new Progress<MessageModel>(value =>
+            var handleProgress = new Progress<MessageModel>(value =>
             {
                 NewMessage?.Invoke(this, value);
             });
+
+            var handleException = new Progress<Exception>(e => 
+            {
+                cancelSource.Cancel();
+            });
+
             listener.Start(maxConnections);
 
-            listeningInputConnections = ListenNewConnections(progressHandler, ct, listener);
+            listeningInputConnections = ListenNewConnections(handleProgress, handleException, ct, listener);
             listeningInputConnections.Start();
         }
 
@@ -64,7 +70,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             
         }
 
-        private Task ListenNewConnections(Progress<MessageModel> progressHandler, CancellationToken ct, TcpListener listener)
+        private Task ListenNewConnections(IProgress<MessageModel> progressHandler, IProgress<Exception> exceptionHandler, CancellationToken ct, TcpListener listener)
         {
             Task listenInputConnections = new Task(() => 
             {
@@ -87,7 +93,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     if (getClient.IsCompleted)
                     {
                         client = getClient.Result;
-                        Task handleClientTask = HandleClient(progressHandler, ct, client);
+                        Task handleClientTask = HandleClient(progressHandler, exceptionHandler, ct, client);
                         handleClientTask.Start();
                         activeConnectionListeners.Add(handleClientTask);
                     }
@@ -97,7 +103,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return listenInputConnections;
         }
 
-        private Task HandleClient(IProgress<MessageModel> progress, CancellationToken ct, TcpClient clientToListen)
+        private Task HandleClient(IProgress<MessageModel> progressHandler, IProgress<Exception> exceptionHandler, CancellationToken ct, TcpClient clientToListen)
         {
             Task listeningTask = new Task(() =>
             {
@@ -122,7 +128,11 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         };
                         writer.Write(msg.Body);
                         writer.Flush();
-                        progress.Report(msg);
+                        progressHandler.Report(msg);
+                    }
+                    catch(Exception e)
+                    {
+                        exceptionHandler.Report(e);
                     }
                     finally
                     {

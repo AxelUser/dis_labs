@@ -10,6 +10,7 @@ namespace MessageEncryptionService.Handlers.Connections.Types
     {
         AskKey,
         SendData,
-        Reply
+        Reply,
+        CloseSession
     }
 }
