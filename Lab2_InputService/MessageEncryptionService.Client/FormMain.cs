@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MessageEncryptionService.Handlers.Connections;
 using MessageEncryptionService.Handlers.Connections.Types;
+using MessageEncryptionService.Handlers.Connections.Messages;
 
 namespace MessageEncryptionService.Client
 {

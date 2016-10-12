@@ -8,9 +8,9 @@ namespace MessageEncryptionService.Handlers.Connections.Types
 {
     public enum MessageTypes
     {
-        AskKey,
+        AskRSAKey,
         SendData,
         Reply,
-        CloseSession
+        CloseConnection
     }
 }

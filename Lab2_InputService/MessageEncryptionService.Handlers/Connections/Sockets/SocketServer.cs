@@ -7,10 +7,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
+using MessageEncryptionService.Handlers.Connections.Messages;
 
 namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
-    public class SocketServer : IServerConnection
+    public class SocketServer : ServerConnectionBase
     {
         public event EventHandler<MessageModel> NewMessage;
 
@@ -19,7 +20,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private Task listeningInputConnections;        
         private CancellationTokenSource cancelSource;
         private List<string> history;
-        private List<Task> activeConnectionListeners;
+        private Dictionary<Guid, Task> activeConnectionListeners;
 
         public SocketServer(string domain, int port, int maxConnections = 10)
         {
@@ -28,20 +29,15 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             cancelSource = new CancellationTokenSource();
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
             listener = new TcpListener(ipAdress, port);
-            activeConnectionListeners = new List<Task>();
+            activeConnectionListeners = new Dictionary<Guid, Task>();
         }
 
-        public MessageModel ReceiveNewMessage()
+        public override MessageModel ReceiveNewMessage()
         {
             throw new NotImplementedException();
         }
 
-        public void SendRSAKey()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StartServer()
+        public override void StartServer()
         {
             CancellationToken ct = cancelSource.Token;
 
@@ -61,7 +57,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             listeningInputConnections.Start();
         }
 
-        public void StopServer()
+        public override void StopServer()
         {
             cancelSource.Cancel();
             listeningInputConnections.Wait();
@@ -70,6 +66,24 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             
         }
 
+        public void RegisterNewClient(Guid clientId, Task handler)
+        {
+            if (!activeConnectionListeners.ContainsKey(clientId))
+            {
+                activeConnectionListeners.Add(clientId, handler);
+                handler.Start();
+            }
+        }
+
+        public void CheckAndRepairClientId(Guid clientId, MessageModel messageFromClient)
+        {
+            if(clientId != messageFromClient.SenderId)
+            {
+                Task handler = activeConnectionListeners[clientId];
+                activeConnectionListeners.Remove(clientId);
+                activeConnectionListeners.Add(messageFromClient.SenderId, handler);
+            }
+        }
         private Task ListenNewConnections(IProgress<MessageModel> progressHandler, IProgress<Exception> exceptionHandler, CancellationToken ct, TcpListener listener)
         {
             Task listenInputConnections = new Task(() => 
@@ -88,17 +102,23 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     }
                     finally
                     {
-                        activeConnectionListeners.RemoveAll(t => t.IsCompleted);
+                        var completedTaskIds = activeConnectionListeners
+                            .Where(pair => pair.Value.IsCompleted)
+                            .Select(pair => pair.Key)
+                            .ToList();
+                        foreach (var id in completedTaskIds)
+                        {
+                            activeConnectionListeners.Remove(id);
+                        }
                     }
                     if (getClient.IsCompleted)
                     {
                         client = getClient.Result;
                         Task handleClientTask = HandleClient(progressHandler, exceptionHandler, ct, client);
-                        handleClientTask.Start();
-                        activeConnectionListeners.Add(handleClientTask);
+                        
                     }
                 }
-                Task.WaitAll(activeConnectionListeners.ToArray());                
+                Task.WaitAll(activeConnectionListeners.Values.ToArray());                
             });
             return listenInputConnections;
         }
@@ -143,6 +163,21 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 socketStream.Close();
             });
             return listeningTask;
+        }
+
+        public override void DisconnectClient(Guid client)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SendRSAKey(Guid client)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ReplyClient(Guid client)
+        {
+            throw new NotImplementedException();
         }
     }
 }

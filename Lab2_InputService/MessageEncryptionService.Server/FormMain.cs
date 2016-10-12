@@ -10,12 +10,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MessageEncryptionService.Handlers.Connections.Messages;
 
 namespace MessageEncryptionService.Server
 {
     public partial class FormMain : Form
     {
-        private IServerConnection server;
+        private ServerConnectionBase server;
         public FormMain()
         {
             InitializeComponent();

@@ -13,9 +13,9 @@ namespace MessageEncryptionService.Handlers.Connections
         public const string DEF_HOST = "127.0.0.1";
         public const int DEF_PORT = 8888;                
 
-        public static IServerConnection CreateServerConnection(ConnectionTypes conType)
+        public static ServerConnectionBase CreateServerConnection(ConnectionTypes conType)
         {
-            IServerConnection server = null;
+            ServerConnectionBase server = null;
             switch (conType)
             {
                 case ConnectionTypes.Sockets:

@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connections\IClientConnection.cs" />
+    <Compile Include="Connections\Messages\ReplyModel.cs" />
     <Compile Include="Connections\Sockets\SocketClient.cs" />
     <Compile Include="Connections\Sockets\SocketServer.cs" />
     <Compile Include="Connections\Types\ConnectionTypes.cs" />
@@ -48,10 +49,10 @@
     <Compile Include="Connections\Types\MessageTypes.cs" />
     <Compile Include="Connections\Types\RoleTypes.cs" />
     <Compile Include="Data\DataTransformHandler.cs" />
-    <Compile Include="Connections\IServerConnection.cs" />
+    <Compile Include="Connections\ServerConnectionBase.cs" />
     <Compile Include="Data\OperatorInfoViewModel.cs" />
     <Compile Include="MessageEncryptionHandler.cs" />
-    <Compile Include="Connections\MessageModel.cs" />
+    <Compile Include="Connections\Messages\MessageModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
