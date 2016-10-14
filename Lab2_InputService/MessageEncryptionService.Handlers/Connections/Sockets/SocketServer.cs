@@ -13,20 +13,21 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
     public class SocketServer : ServerConnectionBase
     {
+        private const string DEF_REPLY_MSG = "Сообщение получено.";
+
         private Guid serverId;
         private TcpListener listener;
         private int maxConnections;
         private Task listeningInputConnections;        
-        private CancellationTokenSource cancelSource;
-        private List<string> history;
+        private CancellationTokenSource ctsMain;
         private Dictionary<Guid, Task> activeConnectionListeners;
+        private Dictionary<Guid, CancellationTokenSource> cancellationSourcesForListeners;
 
         public SocketServer(string domain, int port, int maxConnections = 10)
         {
             serverId = Guid.NewGuid();
             this.maxConnections = maxConnections;
-            history = new List<string>();
-            cancelSource = new CancellationTokenSource();
+            ctsMain = new CancellationTokenSource();
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
             listener = new TcpListener(ipAdress, port);
             activeConnectionListeners = new Dictionary<Guid, Task>();
@@ -39,36 +40,51 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public override void StartServer()
         {
-            CancellationToken ct = cancelSource.Token;
-
-            var handleProgress = new Progress<MessageModel>(value => OnNewMessage(value));
-
-            var handleException = new Progress<Exception>(e => 
-            {                
-                cancelSource.Cancel();
-            });
+            CancellationToken ct = ctsMain.Token;
 
             listener.Start(maxConnections);
-
-            listeningInputConnections = ListenNewConnections(handleProgress, handleException, ct, listener);
+            listeningInputConnections = ListenNewConnections(ct, listener);
             listeningInputConnections.Start();
         }
 
         public override void StopServer()
         {
-            cancelSource.Cancel();
+            ctsMain.Cancel();
             listeningInputConnections.Wait();
             activeConnectionListeners.Clear();
             listener.Stop();
             
         }
 
-        public void RegisterNewClient(Guid clientId, Task handler)
+        public void RegisterNewClient(Guid clientId, TcpClient client)
         {
+            var handleProgress = new Progress<MessageModel>(value => OnNewMessage(value));
+
+            var handleException = new Progress<Tuple<Guid, Exception>>(tp =>
+            {
+                Guid id = tp.Item1;
+                cancellationSourcesForListeners[id].Cancel();
+            });
+            CancellationTokenSource clientCts = new CancellationTokenSource();
+            Task handleClientTask = HandleClient(handleProgress, handleException, clientCts.Token, client, clientId);
             if (!activeConnectionListeners.ContainsKey(clientId))
             {
-                activeConnectionListeners.Add(clientId, handler);
+                cancellationSourcesForListeners.Add(clientId, clientCts);
+                activeConnectionListeners.Add(clientId, handleClientTask);
                 activeConnectionListeners[clientId].Start();
+            }
+        }
+
+        private void ClearCompletedListeners()
+        {
+            var completedTaskIds = activeConnectionListeners
+                .Where(pair => pair.Value.IsCompleted)
+                .Select(pair => pair.Key)
+                .ToList();
+            foreach (var id in completedTaskIds)
+            {
+                activeConnectionListeners.Remove(id);
+                cancellationSourcesForListeners.Remove(id);
             }
         }
 
@@ -77,11 +93,15 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             if(clientId != messageFromClient.SenderId)
             {
                 Task handler = activeConnectionListeners[clientId];
+                CancellationTokenSource cts = cancellationSourcesForListeners[clientId];
+                cancellationSourcesForListeners.Remove(clientId);
+                cancellationSourcesForListeners.Add(messageFromClient.SenderId, cts);
                 activeConnectionListeners.Remove(clientId);
                 activeConnectionListeners.Add(messageFromClient.SenderId, handler);
+                
             }
         }
-        private Task ListenNewConnections(IProgress<MessageModel> progressHandler, IProgress<Exception> exceptionHandler, CancellationToken ct, TcpListener listener)
+        private Task ListenNewConnections(CancellationToken ct, TcpListener listener)
         {
             Task listenInputConnections = new Task(() => 
             {
@@ -99,29 +119,24 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     }
                     finally
                     {
-                        var completedTaskIds = activeConnectionListeners
-                            .Where(pair => pair.Value.IsCompleted)
-                            .Select(pair => pair.Key)
-                            .ToList();
-                        foreach (var id in completedTaskIds)
-                        {
-                            activeConnectionListeners.Remove(id);
-                        }
+                        ClearCompletedListeners();
                     }
                     if (getClient.IsCompleted)
                     {
                         client = getClient.Result;
-                        Task handleClientTask = HandleClient(progressHandler, exceptionHandler, ct, client);
-                        RegisterNewClient(Guid.NewGuid(), handleClientTask);
+                        RegisterNewClient(Guid.NewGuid(), client);
                         
                     }
                 }
+                cancellationSourcesForListeners.Select(p => p.Value)
+                    .ToList()
+                    .ForEach(s => s.Cancel());
                 Task.WaitAll(activeConnectionListeners.Values.ToArray());                
             });
             return listenInputConnections;
         }
 
-        private Task HandleClient(IProgress<MessageModel> progressHandler, IProgress<Exception> exceptionHandler, CancellationToken ct, TcpClient clientToListen)
+        private Task HandleClient(IProgress<MessageModel> progressHandler, IProgress<Tuple<Guid, Exception>> exceptionHandler, CancellationToken ct, TcpClient clientToListen, Guid clientId)
         {
             Task listeningTask = new Task(() =>
             {
@@ -129,21 +144,19 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 BinaryWriter writer = null;
                 NetworkStream socketStream = null;
                 while (!ct.IsCancellationRequested)
-                {                    
-
+                {
                     try
                     {
                         socketStream = clientToListen.GetStream();
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
                         writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
 
-                        var msgRaw = reader.ReadString();
-                        history.Add(msgRaw);
-                        MessageModel request = MessageCustomXmlConverter.ToModel(msgRaw);
+                        var reqRaw = reader.ReadString();
+                        MessageModel request = MessageCustomXmlConverter.ToModel(reqRaw);
 
                         MessageModel response = new ReplyModel(Types.MessageTypes.SendData)
                         {
-                            Body = "Сообщение получено."
+                            Body = DEF_REPLY_MSG
                         };
                         writer.Write(MessageCustomXmlConverter.ToXml(response));
                         writer.Flush();
@@ -151,7 +164,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     }
                     catch(Exception e)
                     {
-                        exceptionHandler.Report(e);
+                        exceptionHandler.Report(new Tuple<Guid, Exception>(clientId, e));
                     }
                     finally
                     {

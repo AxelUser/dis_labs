@@ -45,11 +45,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             {
                 connected = false;
             }
-            if (connected)
-            {
-                CancellationToken ct = cts.Token;
-                StartCheckingConnection(ct);
-            }
             return connected;
         }
 
@@ -91,26 +86,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 }
             }
             return response;
-        }
-
-
-        private void StartCheckingConnection(CancellationToken ct)
-        {
-            IProgress<string> progressHandler = new Progress<string>((message) => 
-            {
-                ConnectionErrorRised?.Invoke(this, message);
-            });
-            checkingConnectionTask = new Task(() => 
-            {
-                while (!ct.IsCancellationRequested)
-                {
-                    if (!CheckConnection())
-                    {
-                        progressHandler.Report("Нет соединения с сервером.");
-                    }
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-                }
-            });
         }
 
         public void Disconnect()
