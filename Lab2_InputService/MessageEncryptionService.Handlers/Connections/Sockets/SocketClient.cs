@@ -15,6 +15,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
     {
         private TcpClient client;
         private IPAddress ipAdress;
+        private Guid clientId;
         CancellationTokenSource cts;
         int port;
 
@@ -24,6 +25,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public SocketClient(string ip, int port)
         {
+            clientId = Guid.NewGuid();
             ipAdress = IPAddress.Parse(ip);
             var s = ipAdress.ToString();
             client = new TcpClient();
@@ -65,7 +67,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public MessageModel Send(MessageModel message)
         {
-            MessageModel reply = null;
+            MessageModel response = null;
             if (CheckConnection())
             {
                 var socketStream = client.GetStream();
@@ -76,13 +78,10 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     {
                         writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
-                        string data = message.Body;
-                        writer.Write(data);
+                        message.SenderId = clientId;
+                        writer.Write(MessageCustomXmlConverter.ToXml(message));
                         writer.Flush();
-                        reply = new MessageModel(Types.MessageTypes.Reply)
-                        {
-                            Body = reader.ReadString()
-                        };
+                        response = MessageCustomXmlConverter.ToModel(reader.ReadString());
                     }
                     finally
                     {
@@ -91,7 +90,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     }
                 }
             }
-            return reply;
+            return response;
         }
 
 

@@ -13,8 +13,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
     public class SocketServer : ServerConnectionBase
     {
-        public event EventHandler<MessageModel> NewMessage;
-
+        private Guid serverId;
         private TcpListener listener;
         private int maxConnections;
         private Task listeningInputConnections;        
@@ -24,6 +23,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public SocketServer(string domain, int port, int maxConnections = 10)
         {
+            serverId = Guid.NewGuid();
             this.maxConnections = maxConnections;
             history = new List<string>();
             cancelSource = new CancellationTokenSource();
@@ -41,13 +41,10 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             CancellationToken ct = cancelSource.Token;
 
-            var handleProgress = new Progress<MessageModel>(value =>
-            {
-                NewMessage?.Invoke(this, value);
-            });
+            var handleProgress = new Progress<MessageModel>(value => OnNewMessage(value));
 
             var handleException = new Progress<Exception>(e => 
-            {
+            {                
                 cancelSource.Cancel();
             });
 
@@ -71,7 +68,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             if (!activeConnectionListeners.ContainsKey(clientId))
             {
                 activeConnectionListeners.Add(clientId, handler);
-                handler.Start();
+                activeConnectionListeners[clientId].Start();
             }
         }
 
@@ -115,6 +112,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     {
                         client = getClient.Result;
                         Task handleClientTask = HandleClient(progressHandler, exceptionHandler, ct, client);
+                        RegisterNewClient(Guid.NewGuid(), handleClientTask);
                         
                     }
                 }
@@ -139,16 +137,17 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
                         writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
 
-                        var msgText = reader.ReadString();
-                        history.Add(msgText);
+                        var msgRaw = reader.ReadString();
+                        history.Add(msgRaw);
+                        MessageModel request = MessageCustomXmlConverter.ToModel(msgRaw);
 
-                        MessageModel msg = new MessageModel(Types.MessageTypes.Reply)
+                        MessageModel response = new ReplyModel(Types.MessageTypes.SendData)
                         {
                             Body = "Сообщение получено."
                         };
-                        writer.Write(msg.Body);
+                        writer.Write(MessageCustomXmlConverter.ToXml(response));
                         writer.Flush();
-                        progressHandler.Report(msg);
+                        progressHandler.Report(request);
                     }
                     catch(Exception e)
                     {

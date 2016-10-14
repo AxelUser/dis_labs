@@ -16,6 +16,8 @@ namespace MessageEncryptionService.Client
     public partial class FormMain : Form
     {
         private IClientConnection client;
+        private Guid clientId;
+
         private bool connected;
         public FormMain()
         {
@@ -34,6 +36,7 @@ namespace MessageEncryptionService.Client
 
         private void FormMain_Load(object sender, EventArgs e)
         {
+            clientId = Guid.NewGuid();
             connected = true;
             client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
 

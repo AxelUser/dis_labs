@@ -32,13 +32,14 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
         public static MessageModel ToModel(string xml)
         {
             XDocument xDoc = XDocument.Parse(xml);
+            var docRoot = xDoc.Root;
             MessageModel message;
-            MessageTypes type = (MessageTypes) Enum.Parse(typeof(MessageTypes), xDoc.Elements().Single(e => e.Name == "MessageType").Value);
+            MessageTypes type = (MessageTypes) Enum.Parse(typeof(MessageTypes), docRoot.Elements().Single(e => e.Name == "MessageType").Value);
             if (type == MessageTypes.Reply)
             {                
                 message = new ReplyModel(type);
                 MessageTypes replyType = (MessageTypes)Enum
-                    .Parse(typeof(MessageTypes), xDoc
+                    .Parse(typeof(MessageTypes), docRoot
                     .Elements().Single(e => e.Name == "ReplyType").Value);
                 ((ReplyModel)message).ReplyType = replyType;
             }
@@ -46,8 +47,8 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             {
                 message = new MessageModel(type);
             }
-            message.SenderId = Guid.Parse(xDoc.Elements().Single(e => e.Name == "Sender").Value);
-            message.Body = xDoc.Elements().Single(e => e.Name == "Body").Value;
+            message.SenderId = Guid.Parse(docRoot.Elements().Single(e => e.Name == "Sender").Value);
+            message.Body = docRoot.Elements().Single(e => e.Name == "Body").Value;
 
             return message;
         }

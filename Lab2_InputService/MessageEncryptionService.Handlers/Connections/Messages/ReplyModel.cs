@@ -10,6 +10,9 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
     public class ReplyModel: MessageModel
     {
         public MessageTypes ReplyType { get; set; }
-        public ReplyModel(MessageTypes type) : base(type) { }
+        public ReplyModel(MessageTypes replyType) : base(MessageTypes.Reply)
+        {
+            ReplyType = replyType;
+        }
     }
 }

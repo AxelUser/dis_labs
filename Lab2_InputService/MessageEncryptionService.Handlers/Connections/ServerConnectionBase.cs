@@ -45,5 +45,10 @@ namespace MessageEncryptionService.Handlers.Connections
         {
             
         }
+
+        protected void OnNewMessage(MessageModel message)
+        {
+            NewMessage?.Invoke(this, message);
+        }
     }
 }
