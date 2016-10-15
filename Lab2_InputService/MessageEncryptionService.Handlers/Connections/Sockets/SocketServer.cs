@@ -60,7 +60,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         public void RegisterNewClient(Guid clientId, TcpClient client)
         {
             var handleProgress = new Progress<MessageModel>(value => OnNewMessage(value));
-
             var handleException = new Progress<Tuple<Guid, Exception>>(tp =>
             {
                 Guid id = tp.Item1;

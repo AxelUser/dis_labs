@@ -11,6 +11,9 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
     {
         public MessageTypes MessageType { get; private set; }
         public Guid SenderId { get; set; }
+        public bool IsBodyEncrypted { get; set; }
+        public string DESKey { get; set; }
+        public string DESIV { get; set; }
         public string Body { get; set; }
         public MessageModel(MessageTypes type)
         {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Handlers.Data
 {
-    class DataTransformHandler
+    public class DataTransformHandler
     {
     }
 }

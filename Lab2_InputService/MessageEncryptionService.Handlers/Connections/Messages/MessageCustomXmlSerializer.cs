@@ -21,8 +21,10 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
                 root.Add(new XElement("ReplyType", ((ReplyModel)message).ReplyType));
             }
             root.Add(new XElement("Sender", message.SenderId),
+                new XElement("IsBodyEncrypted", message.IsBodyEncrypted),
+                new XElement("DESKey", message.IsBodyEncrypted),
+                new XElement("DESIV", message.IsBodyEncrypted),
                 new XElement("Body", message.Body));
-
             XDocument xDoc = new XDocument();
             xDoc.Add(root);
             return xDoc.ToString();
@@ -47,6 +49,9 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
                 message = new MessageModel(type);
             }
             message.SenderId = Guid.Parse(docRoot.Elements().Single(e => e.Name == "Sender").Value);
+            message.IsBodyEncrypted = Boolean.Parse(docRoot.Elements().Single(e => e.Name == "IsBodyEncrypted").Value);
+            message.DESKey = docRoot.Elements().Single(e => e.Name == "DESKey").Value;
+            message.DESIV = docRoot.Elements().Single(e => e.Name == "DESIV").Value;
             message.Body = docRoot.Elements().Single(e => e.Name == "Body").Value;
 
             return message;
