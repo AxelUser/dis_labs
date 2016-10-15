@@ -13,16 +13,13 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
     public class SocketClient : IClientConnection
     {
+        #region Параметры и конструктор.
+        public event EventHandler<Exception> ConnectionErrorRised;
         private TcpClient client;
         private IPAddress ipAdress;
-        private Guid clientId;
-        CancellationTokenSource cts;
+        private Guid clientId;        
         int port;
-
-        Task checkingConnectionTask;
-
-        public event EventHandler<string> ConnectionErrorRised;
-
+        public bool Connected { get; set; }
         public SocketClient(string ip, int port)
         {
             clientId = Guid.NewGuid();
@@ -30,34 +27,32 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             var s = ipAdress.ToString();
             client = new TcpClient();
             this.port = port;
-            cts = new CancellationTokenSource();
         }
-
+        #endregion
         public bool Connect()
         {
-            bool connected;
             try
             {                
                 client.Connect(ipAdress, port);                
-                connected = true;
+                Connected = true;
             }
             catch
             {
-                connected = false;
+                Connected = false;
             }
-            return connected;
+            return Connected;
         }
 
         public bool CheckConnection()
         {
-            bool connected = client.Connected && client.Client.Poll(1000, SelectMode.SelectRead);
-            if (connected)
-            {
-                byte[] buff = new byte[1];
-                connected = client.Client.Receive(buff, SocketFlags.Peek) != 0;
-            }
+            //bool connected = client.Connected && client.Client.Poll(1000, SelectMode.SelectRead);
+            //if (connected)
+            //{
+            //    byte[] buff = new byte[1];
+            //    connected = client.Client.Receive(buff, SocketFlags.Peek) != 0;
+            //}
             //return connected;
-            return true; //пока оставлю заглушку
+            return Connected; //пока оставлю заглушку
         }        
 
         public MessageModel Send(MessageModel message)
@@ -78,6 +73,10 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         writer.Flush();
                         response = MessageCustomXmlConverter.ToModel(reader.ReadString());
                     }
+                    catch(Exception e)
+                    {
+                        ConnectionErrorRised?.Invoke(this, e);
+                    }
                     finally
                     {
                         writer.Close();
@@ -90,8 +89,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public void Disconnect()
         {
-            cts.Cancel();
-            checkingConnectionTask.Wait(TimeSpan.FromSeconds(10));
+            client.Close();
+            Connected = false;
         }
     }
 }

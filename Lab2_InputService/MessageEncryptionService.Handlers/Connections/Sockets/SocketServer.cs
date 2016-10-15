@@ -13,8 +13,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
     public class SocketServer : ServerConnectionBase
     {
+        #region Параметры и конструктор.
         private const string DEF_REPLY_MSG = "Сообщение получено.";
-
         private Guid serverId;
         private TcpListener listener;
         private int maxConnections;
@@ -32,6 +32,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             listener = new TcpListener(ipAdress, port);
             activeConnectionListeners = new Dictionary<Guid, Task>();
         }
+        #endregion
 
         public override MessageModel ReceiveNewMessage()
         {

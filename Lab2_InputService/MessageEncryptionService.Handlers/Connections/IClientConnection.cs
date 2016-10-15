@@ -9,7 +9,8 @@ namespace MessageEncryptionService.Handlers.Connections
 {
     public interface IClientConnection
     {
-        event EventHandler<string> ConnectionErrorRised;
+        event EventHandler<Exception> ConnectionErrorRised;
+        bool Connected { get; set; }
         bool CheckConnection();
         bool Connect();
         void Disconnect();

@@ -12,8 +12,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
     {
         private static int formatVersion = 1;
         public static string ToXml(MessageModel message)
-        {
-            string xml = null;            
+        {          
             var root = new XElement("Message");
             root.SetAttributeValue("version", formatVersion);
             root.Add(new XElement("MessageType", message.MessageType));
