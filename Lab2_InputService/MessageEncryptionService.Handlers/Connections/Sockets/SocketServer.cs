@@ -22,6 +22,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private CancellationTokenSource ctsMain;
         private Dictionary<Guid, Task> activeConnectionListeners;
         private Dictionary<Guid, CancellationTokenSource> cancellationSourcesForListeners;
+        private MessageEncryptionHandler encryptionHandler;
 
         public SocketServer(string domain, int port, int maxConnections = 10)
         {
@@ -31,6 +32,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
             listener = new TcpListener(ipAdress, port);
             activeConnectionListeners = new Dictionary<Guid, Task>();
+            encryptionHandler = new MessageEncryptionHandler();
         }
         #endregion
 
@@ -154,10 +156,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         var reqRaw = reader.ReadString();
                         MessageModel request = MessageCustomXmlConverter.ToModel(reqRaw);
 
-                        MessageModel response = new ReplyModel(Types.MessageTypes.SendData)
-                        {
-                            Body = DEF_REPLY_MSG
-                        };
+                        MessageModel response = MessageRouting(request, clientId);
                         writer.Write(MessageCustomXmlConverter.ToXml(response));
                         writer.Flush();
                         progressHandler.Report(request);
@@ -182,12 +181,13 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             throw new NotImplementedException();
         }
 
-        public override void SendRSAKey(Guid client)
+        public override ReplyModel SendRSAKey(Guid client)
         {
+
             throw new NotImplementedException();
         }
 
-        public override void ReplyClient(Guid client)
+        public override ReplyModel ReplyClient(Guid client, MessageModel message)
         {
             throw new NotImplementedException();
         }

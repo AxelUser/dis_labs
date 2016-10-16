@@ -55,7 +55,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return Connected; //пока оставлю заглушку
         }        
 
-        public MessageModel Send(MessageModel message)
+        public MessageModel Send(MessageModel message, bool encrypted = true)
         {
             MessageModel response = null;
             if (CheckConnection())
@@ -69,6 +69,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
                         message.SenderId = clientId;
+
                         writer.Write(MessageCustomXmlConverter.ToXml(message));
                         writer.Flush();
                         response = MessageCustomXmlConverter.ToModel(reader.ReadString());

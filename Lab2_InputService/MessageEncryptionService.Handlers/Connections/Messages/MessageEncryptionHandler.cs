@@ -11,10 +11,10 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
     {
         AsymmetricEncryptionHandler asymHandler;
         SymmetricEncryptionHandler symHandler;
-        public MessageEncryptionHandler(AsymmetricEncryptionHandler asym, SymmetricEncryptionHandler sym)
+        public MessageEncryptionHandler(AsymmetricEncryptionHandler asym)
         {
             asymHandler = asym;
-            symHandler = sym;
+            symHandler = new SymmetricEncryptionHandler();
         }
 
         public MessageModel EncryptMessage(MessageModel message)        
@@ -31,10 +31,10 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
                     SenderId = message.SenderId,
                     IsBodyEncrypted = message.IsBodyEncrypted
                 };
-            }            
-            newMessage.DESIV = asymHandler.RSAEncrypt(message.DESIV);
-            newMessage.DESKey = asymHandler.RSAEncrypt(message.DESKey);
-            //newMessage.Body = 
+            }                   
+            newMessage.DESIV = asymHandler.RSAEncrypt(symHandler.IVInBase64);
+            newMessage.DESKey = asymHandler.RSAEncrypt(symHandler.KeyInBase64);
+            newMessage.Body = symHandler.DESEncrypt(message.Body);
             return newMessage;
         }
 
@@ -55,6 +55,8 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             }
             newMessage.DESIV = asymHandler.RSADecrypt(message.DESIV);
             newMessage.DESKey = asymHandler.RSADecrypt(message.DESKey);
+            symHandler = new SymmetricEncryptionHandler(newMessage.DESIV, newMessage.DESKey);
+            newMessage.Body = symHandler.DESDecrypt(message.Body);
             return newMessage;
         }
     }

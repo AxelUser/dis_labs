@@ -40,11 +40,11 @@ namespace MessageEncryptionService.Client
             connected = true;
             client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
 
-            client.ConnectionErrorRised += (s, msg) =>
+            client.ConnectionErrorRised += (s, ex) =>
             {
                 if (connected)
                 {
-                    MessageBox.Show(msg);
+                    MessageBox.Show(ex.Message);
                     connected = false;
                     client.Disconnect();
                 }

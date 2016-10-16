@@ -14,14 +14,15 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract void StartServer();
         public abstract void StopServer();
         public abstract void DisconnectClient(Guid client);
-        public abstract void SendRSAKey(Guid client);
-        public abstract void ReplyClient(Guid client);
+        public abstract ReplyModel SendRSAKey(Guid client);
+        public abstract ReplyModel ReplyClient(Guid client, MessageModel request);
         public abstract MessageModel ReceiveNewMessage();
-        public void MessageRouting(MessageModel message, Guid sender)
+        public ReplyModel MessageRouting(MessageModel message, Guid sender)
         {
             if(message.MessageType == Types.MessageTypes.Reply)
             {
-                //Обработка ответов.
+                //Обработка ответов. Пока не придумал.
+                return null;
             }
             else
             {
@@ -29,14 +30,24 @@ namespace MessageEncryptionService.Handlers.Connections
                 switch (message.MessageType)
                 {
                     case Types.MessageTypes.AskRSAKey:
-                        SendRSAKey(sender);
-                        break;
+                        return SendRSAKey(sender);
                     case Types.MessageTypes.CloseConnection:
                         DisconnectClient(sender);
-                        break;
+                        return new ReplyModel(Types.MessageTypes.CloseConnection)
+                        {
+                            SenderId = sender,
+                            IsBodyEncrypted = false,
+                            Body = "Завершение соединения подтверждено."
+                        };
                     case Types.MessageTypes.SendData:
                         AddData(message, sender);
-                        break;
+                        return new ReplyModel(Types.MessageTypes.SendData)
+                        {
+                            SenderId = sender,
+                            IsBodyEncrypted = false,
+                            Body = "Данные добавлены."
+                        };
+                    default: return null;
                 }
             }
         }        

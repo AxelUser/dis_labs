@@ -10,13 +10,34 @@ namespace MessageEncryptionService.Handlers.Data
     public class SymmetricEncryptionHandler
     {
         TripleDESCryptoServiceProvider desProvider;
-        public SymmetricEncryptionHandler(byte[] iv, byte[] key)
+        public SymmetricEncryptionHandler()
         {
             desProvider = new TripleDESCryptoServiceProvider();
-            if(iv != null && key != null)
+        }
+
+        public SymmetricEncryptionHandler(string ivBase64 = null, string keyBase64 = null)
+        {
+            desProvider = new TripleDESCryptoServiceProvider();
+            if (ivBase64 != null && keyBase64 != null)
             {
-                desProvider.IV = iv;
-                desProvider.Key = key;
+                desProvider.IV = Convert.FromBase64String(ivBase64);
+                desProvider.Key = Convert.FromBase64String(keyBase64);
+            }
+        }
+
+        public string IVInBase64
+        {
+            get
+            {
+                return Convert.ToBase64String(desProvider.IV);
+            }
+        }
+
+        public string KeyInBase64
+        {
+            get
+            {
+                return Convert.ToBase64String(desProvider.Key);
             }
         }
 

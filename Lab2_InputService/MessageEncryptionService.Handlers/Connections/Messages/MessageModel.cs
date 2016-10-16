@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Handlers.Connections.Messages
 {
-    public class MessageModel
+    public class MessageModel: ICloneable
     {
         public MessageTypes MessageType { get; private set; }
         public Guid SenderId { get; set; }
@@ -18,6 +18,18 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
         public MessageModel(MessageTypes type)
         {
             this.MessageType = type;
+        }
+
+        public virtual object Clone()
+        {
+            return new MessageModel(this.MessageType)
+            {
+                SenderId = this.SenderId,
+                IsBodyEncrypted = this.IsBodyEncrypted,
+                DESIV = this.DESIV,
+                DESKey = this.DESKey,
+                Body = this.Body
+            };
         }
     }
 }

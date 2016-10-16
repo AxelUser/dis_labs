@@ -14,5 +14,12 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
         {
             ReplyType = replyType;
         }
+
+        public override object Clone()
+        {
+            ReplyModel reply = (ReplyModel)base.Clone();
+            reply.ReplyType = this.ReplyType;
+            return reply;
+        }
     }
 }
