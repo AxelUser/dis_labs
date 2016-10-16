@@ -11,7 +11,8 @@ namespace MessageEncryptionService.Handlers.Connections
     public class ConnectionFactory
     {
         public const string DEF_HOST = "127.0.0.1";
-        public const int DEF_PORT = 8888;                
+        public const int DEF_PORT = 8888;
+        public const string DEF_QUEUE_NAME = (".\\private$\\EncryptionServiceLabWork";
 
         public static ServerConnectionBase CreateServerConnection(ConnectionTypes conType)
         {
@@ -21,6 +22,9 @@ namespace MessageEncryptionService.Handlers.Connections
                 case ConnectionTypes.Sockets:
                     server = new SocketServer(DEF_HOST, DEF_PORT);
                     break;
+                case ConnectionTypes.MSMQ:
+                    break;
+
             }
             return server;
         }
@@ -32,6 +36,8 @@ namespace MessageEncryptionService.Handlers.Connections
             {
                 case ConnectionTypes.Sockets:
                     client = new SocketClient(DEF_HOST, DEF_PORT);
+                    break;
+                case ConnectionTypes.MSMQ:
                     break;
             }
             return client;

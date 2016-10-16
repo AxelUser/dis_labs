@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,6 +45,8 @@
     <Compile Include="Connections\Messages\MessageCustomXmlSerializer.cs" />
     <Compile Include="Connections\Messages\MessageEncryptionHandler.cs" />
     <Compile Include="Connections\Messages\ReplyModel.cs" />
+    <Compile Include="Connections\MQ\MessageQueueClient.cs" />
+    <Compile Include="Connections\MQ\MessageQueueServer.cs" />
     <Compile Include="Connections\Sockets\SocketClient.cs" />
     <Compile Include="Connections\Sockets\SocketServer.cs" />
     <Compile Include="Connections\Types\ConnectionTypes.cs" />
@@ -58,9 +61,7 @@
     <Compile Include="Connections\Messages\MessageModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Connections\MQ\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
