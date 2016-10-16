@@ -54,6 +54,10 @@ namespace MessageEncryptionService.Client
             {
                 MessageBox.Show("Ошибка подключения клиента к серверу.");
             }
+            else
+            {
+                client.AskAsymKey();
+            }
         }
     }
 }

@@ -17,6 +17,14 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract ReplyModel SendRSAKey(Guid client);
         public abstract ReplyModel ReplyClient(Guid client, MessageModel request);
         public abstract MessageModel ReceiveNewMessage();
+
+        protected IProgress<MessageModel> onNewMessageHandler;
+
+        public ServerConnectionBase()
+        {
+            onNewMessageHandler = new Progress<MessageModel>(m => NewMessage?.Invoke(this, m));
+        }
+
         public ReplyModel MessageRouting(MessageModel message, Guid sender)
         {
             if(message.MessageType == Types.MessageTypes.Reply)
@@ -54,12 +62,12 @@ namespace MessageEncryptionService.Handlers.Connections
 
         public void AddData(MessageModel message, Guid client)
         {
-            
+
         }
 
         protected void OnNewMessage(MessageModel message)
         {
-            NewMessage?.Invoke(this, message);
+            onNewMessageHandler.Report(message);
         }
     }
 }

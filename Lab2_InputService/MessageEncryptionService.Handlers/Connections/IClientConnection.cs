@@ -15,5 +15,6 @@ namespace MessageEncryptionService.Handlers.Connections
         bool Connect();
         void Disconnect();
         MessageModel Send(MessageModel message, bool encrypted = true);
+        void AskAsymKey();
     }
 }

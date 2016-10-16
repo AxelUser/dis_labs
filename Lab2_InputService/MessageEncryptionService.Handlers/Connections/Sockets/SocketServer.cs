@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using MessageEncryptionService.Handlers.Connections.Messages;
+using MessageEncryptionService.Handlers.Data;
 
 namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
@@ -32,7 +33,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
             listener = new TcpListener(ipAdress, port);
             activeConnectionListeners = new Dictionary<Guid, Task>();
-            encryptionHandler = new MessageEncryptionHandler();
+            cancellationSourcesForListeners = new Dictionary<Guid, CancellationTokenSource>();
+            encryptionHandler = new MessageEncryptionHandler(new AsymmetricEncryptionHandler());
         }
         #endregion
 
@@ -71,8 +73,14 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             Task handleClientTask = HandleClient(handleProgress, handleException, clientCts.Token, client, clientId);
             if (!activeConnectionListeners.ContainsKey(clientId))
             {
-                cancellationSourcesForListeners.Add(clientId, clientCts);
-                activeConnectionListeners.Add(clientId, handleClientTask);
+                lock (cancellationSourcesForListeners)
+                {
+                    cancellationSourcesForListeners.Add(clientId, clientCts);
+                }
+                lock (activeConnectionListeners)
+                {
+                    activeConnectionListeners.Add(clientId, handleClientTask);
+                }
                 activeConnectionListeners[clientId].Start();
             }
         }
@@ -96,11 +104,16 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             {
                 Task handler = activeConnectionListeners[clientId];
                 CancellationTokenSource cts = cancellationSourcesForListeners[clientId];
-                cancellationSourcesForListeners.Remove(clientId);
-                cancellationSourcesForListeners.Add(messageFromClient.SenderId, cts);
-                activeConnectionListeners.Remove(clientId);
-                activeConnectionListeners.Add(messageFromClient.SenderId, handler);
-                
+                lock (cancellationSourcesForListeners)
+                {
+                    cancellationSourcesForListeners.Remove(clientId);
+                    cancellationSourcesForListeners.Add(messageFromClient.SenderId, cts);
+                }
+                lock (activeConnectionListeners)
+                {
+                    activeConnectionListeners.Remove(clientId);
+                    activeConnectionListeners.Add(messageFromClient.SenderId, handler);
+                }                
             }
         }
         private Task ListenNewConnections(CancellationToken ct, TcpListener listener)
@@ -156,6 +169,11 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         var reqRaw = reader.ReadString();
                         MessageModel request = MessageCustomXmlConverter.ToModel(reqRaw);
 
+                        if (request.IsBodyEncrypted)
+                        {
+                            request = encryptionHandler.DecryptMessage(request);
+                        }
+
                         MessageModel response = MessageRouting(request, clientId);
                         writer.Write(MessageCustomXmlConverter.ToXml(response));
                         writer.Flush();
@@ -183,8 +201,10 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public override ReplyModel SendRSAKey(Guid client)
         {
-
-            throw new NotImplementedException();
+            return new ReplyModel(Types.MessageTypes.AskRSAKey)
+            {
+                Body = encryptionHandler.GetPublicAsymKey()
+            };
         }
 
         public override ReplyModel ReplyClient(Guid client, MessageModel message)

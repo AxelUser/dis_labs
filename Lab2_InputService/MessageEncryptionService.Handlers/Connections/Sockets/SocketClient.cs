@@ -19,6 +19,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private IPAddress ipAdress;
         private Guid clientId;        
         int port;
+        MessageEncryptionHandler encryptionHandler;
+
         public bool Connected { get; set; }
         public SocketClient(string ip, int port)
         {
@@ -26,7 +28,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             ipAdress = IPAddress.Parse(ip);
             var s = ipAdress.ToString();
             client = new TcpClient();
-            this.port = port;
+            this.port = port;            
         }
         #endregion
         public bool Connect()
@@ -34,7 +36,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             try
             {                
                 client.Connect(ipAdress, port);                
-                Connected = true;
+                Connected = true;                
             }
             catch
             {
@@ -70,7 +72,12 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
                         message.SenderId = clientId;
 
-                        writer.Write(MessageCustomXmlConverter.ToXml(message));
+                        MessageModel request = (MessageModel) message.Clone();
+                        if (encrypted && encryptionHandler != null)
+                        {                            
+                            request = encryptionHandler.EncryptMessage(request);
+                        }
+                        writer.Write(MessageCustomXmlConverter.ToXml(request));
                         writer.Flush();
                         response = MessageCustomXmlConverter.ToModel(reader.ReadString());
                     }
@@ -92,6 +99,19 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             client.Close();
             Connected = false;
+        }
+
+        public void AskAsymKey()
+        {
+            MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
+            MessageModel response = Send(request, false);            
+            string key = response.Body;
+            InitEncryptionHandler(key);
+        }
+
+        private void InitEncryptionHandler(string rsaKey)
+        {
+            encryptionHandler = new MessageEncryptionHandler(new Data.AsymmetricEncryptionHandler(rsaKey));
         }
     }
 }

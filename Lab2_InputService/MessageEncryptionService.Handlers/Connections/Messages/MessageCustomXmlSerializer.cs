@@ -22,8 +22,8 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             }
             root.Add(new XElement("Sender", message.SenderId),
                 new XElement("IsBodyEncrypted", message.IsBodyEncrypted),
-                new XElement("DESKey", message.IsBodyEncrypted),
-                new XElement("DESIV", message.IsBodyEncrypted),
+                new XElement("DESKey", message.DESKey),
+                new XElement("DESIV", message.DESIV),
                 new XElement("Body", message.Body));
             XDocument xDoc = new XDocument();
             xDoc.Add(root);

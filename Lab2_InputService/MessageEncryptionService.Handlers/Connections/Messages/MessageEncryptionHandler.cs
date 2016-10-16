@@ -22,18 +22,17 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             MessageModel newMessage;
             if (message is ReplyModel)
             {
-                newMessage = new ReplyModel(((ReplyModel)message).ReplyType);
+                newMessage = message.Clone() as ReplyModel;
             }
             else
             {
-                newMessage = new MessageModel(message.MessageType)
-                {
-                    SenderId = message.SenderId,
-                    IsBodyEncrypted = message.IsBodyEncrypted
-                };
-            }                   
-            newMessage.DESIV = asymHandler.RSAEncrypt(symHandler.IVInBase64);
-            newMessage.DESKey = asymHandler.RSAEncrypt(symHandler.KeyInBase64);
+                newMessage = message.Clone() as MessageModel;
+            }
+            newMessage.IsBodyEncrypted = true;
+            newMessage.DESIV = asymHandler.RSAEncryptToBase64(symHandler.IVInBase64);
+            newMessage.DESKey = asymHandler.RSAEncryptToBase64(symHandler.KeyInBase64);
+            //newMessage.DESIV = symHandler.IVInBase64;
+            //newMessage.DESKey = symHandler.KeyInBase64;
             newMessage.Body = symHandler.DESEncrypt(message.Body);
             return newMessage;
         }
@@ -43,21 +42,23 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             MessageModel newMessage;
             if (message is ReplyModel)
             {
-                newMessage = new ReplyModel(((ReplyModel)message).ReplyType);
+                newMessage = message.Clone() as ReplyModel;
             }
             else
             {
-                newMessage = new MessageModel(message.MessageType)
-                {
-                    SenderId = message.SenderId,
-                    IsBodyEncrypted = message.IsBodyEncrypted
-                };
+                newMessage = message.Clone() as MessageModel;
             }
-            newMessage.DESIV = asymHandler.RSADecrypt(message.DESIV);
-            newMessage.DESKey = asymHandler.RSADecrypt(message.DESKey);
+            newMessage.IsBodyEncrypted = false;
+            newMessage.DESIV = asymHandler.RSADecryptToBase64(message.DESIV);
+            newMessage.DESKey = asymHandler.RSADecryptToBase64(message.DESKey);
             symHandler = new SymmetricEncryptionHandler(newMessage.DESIV, newMessage.DESKey);
             newMessage.Body = symHandler.DESDecrypt(message.Body);
             return newMessage;
+        }
+
+        public string GetPublicAsymKey()
+        {
+            return asymHandler.RSAPublicKey;
         }
     }
 }

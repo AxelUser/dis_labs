@@ -33,16 +33,18 @@ namespace MessageEncryptionService.Handlers.Data
             rsaProvider = new RSACryptoServiceProvider();
         }
 
-        public string RSADecrypt(string data)
-        {
-           byte[] bytes = Encoding.Unicode.GetBytes(data);
-           return Convert.ToBase64String(rsaProvider.Decrypt(bytes, true));
+        public string RSADecryptToBase64(string dataInBase64)
+        {           
+            byte[] bytes = Convert.FromBase64String(dataInBase64);
+            byte[] decrypted = rsaProvider.Decrypt(bytes, true);
+            return Convert.ToBase64String(decrypted);
         }
 
-        public string RSAEncrypt(string data)
+        public string RSAEncryptToBase64(string dataInBase64)
         {
-            byte[] bytes = Convert.FromBase64String(data);
-            return Encoding.Unicode.GetString(rsaProvider.Encrypt(bytes, true));
+            byte[] bytes = Convert.FromBase64String(dataInBase64);
+            byte[] encrypted = rsaProvider.Encrypt(bytes, true);
+            return Convert.ToBase64String(encrypted);
         }
 
     }

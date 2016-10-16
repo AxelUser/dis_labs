@@ -55,7 +55,6 @@
     <Compile Include="Connections\ServerConnectionBase.cs" />
     <Compile Include="Data\OperatorInfoViewModel.cs" />
     <Compile Include="Data\SymmetricEncryptionHandler.cs" />
-    <Compile Include="MessageEncryptionHandler.cs" />
     <Compile Include="Connections\Messages\MessageModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

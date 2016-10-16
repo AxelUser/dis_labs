@@ -48,10 +48,10 @@ namespace MessageEncryptionService.Handlers.Data
                 .TransformFinalBlock(bytes, 0, bytes.Length));
         }
 
-        public string DESDecrypt(string data)
+        public string DESDecrypt(string dataInBase64)
         {
-            byte[] bytes = Encoding.Unicode.GetBytes(data);
-            return Convert.ToBase64String(desProvider.CreateDecryptor()
+            byte[] bytes = Convert.FromBase64String(dataInBase64);
+            return Encoding.Unicode.GetString(desProvider.CreateDecryptor()
                 .TransformFinalBlock(bytes, 0, bytes.Length));
         }
 
