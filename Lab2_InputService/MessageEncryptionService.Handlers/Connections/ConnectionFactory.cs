@@ -12,7 +12,7 @@ namespace MessageEncryptionService.Handlers.Connections
     {
         public const string DEF_HOST = "127.0.0.1";
         public const int DEF_PORT = 8888;
-        public const string DEF_QUEUE_NAME = (".\\private$\\EncryptionServiceLabWork";
+        public const string DEF_QUEUE_NAME = ".\\private$\\EncryptionServiceLabWork";
 
         public static ServerConnectionBase CreateServerConnection(ConnectionTypes conType)
         {
@@ -22,7 +22,7 @@ namespace MessageEncryptionService.Handlers.Connections
                 case ConnectionTypes.Sockets:
                     server = new SocketServer(DEF_HOST, DEF_PORT);
                     break;
-                case ConnectionTypes.MSMQ:
+                case ConnectionTypes.RabbitMQ:
                     break;
 
             }
@@ -37,7 +37,7 @@ namespace MessageEncryptionService.Handlers.Connections
                 case ConnectionTypes.Sockets:
                     client = new SocketClient(DEF_HOST, DEF_PORT);
                     break;
-                case ConnectionTypes.MSMQ:
+                case ConnectionTypes.RabbitMQ:
                     break;
             }
             return client;

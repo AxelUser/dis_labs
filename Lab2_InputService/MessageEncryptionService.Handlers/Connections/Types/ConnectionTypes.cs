@@ -9,6 +9,6 @@ namespace MessageEncryptionService.Handlers.Connections.Types
     public enum ConnectionTypes
     {
         Sockets,
-        MSMQ        
+        RabbitMQ        
     }
 }
