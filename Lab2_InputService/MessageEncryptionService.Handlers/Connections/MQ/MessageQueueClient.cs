@@ -4,20 +4,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MessageEncryptionService.Handlers.Connections.Messages;
-using System.Messaging;
+using RabbitMQ.Client;
 
 namespace MessageEncryptionService.Handlers.Connections.MQ
 {
     class MessageQueueClient : IClientConnection
     {
-        private MessageQueue queue;
-        public MessageQueueClient(string queueName)
+        RabbitMQ.Client.ConnectionFactory mqConnectionFactory;
+        IConnection mqConnection;
+        IModel inputChannel;
+        IModel outputChannel;
+        public MessageQueueClient(string inputQueueName, string outputQueueName)
         {
-            if (!MessageQueue.Exists(queueName))
+            mqConnectionFactory = new RabbitMQ.Client.ConnectionFactory()
             {
-                MessageQueue.Create(queueName);
-            }
-            queue = new MessageQueue(queueName);
+                UserName = "guest",
+                Password = "guest",
+                VirtualHost = "/",
+                HostName = "localhost",
+                Port = 5672
+            };
         }
         public bool Connected
         {
@@ -41,17 +47,26 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
 
         public bool CheckConnection()
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public bool Connect()
         {
-            throw new NotImplementedException();
+            try
+            {
+                mqConnection = mqConnectionFactory.CreateConnection();
+                Connected = true;
+            }
+            catch
+            {
+                Connected = false;
+            }
+            return Connected;
         }
 
         public void Disconnect()
         {
-            throw new NotImplementedException();
+            mqConnection.Close();
         }
 
         public MessageModel Send(MessageModel message, bool encrypted = true)
