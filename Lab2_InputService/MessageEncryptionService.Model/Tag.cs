@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Model
 {
-    public class Class1
+    public class Tag
     {
+        public Guid Id { get; set; }
+        public string Caption { get; set; }
+        public virtual ICollection<Post> Posts { get; set; }
     }
 }
