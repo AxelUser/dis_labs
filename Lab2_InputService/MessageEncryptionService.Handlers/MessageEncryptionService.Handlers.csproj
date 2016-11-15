@@ -52,6 +52,7 @@
     <Compile Include="Connections\Messages\ReplyModel.cs" />
     <Compile Include="Connections\MQ\MessageQueueClient.cs" />
     <Compile Include="Connections\MQ\MessageQueueServer.cs" />
+    <Compile Include="Connections\MQ\MQManager.cs" />
     <Compile Include="Connections\Sockets\SocketClient.cs" />
     <Compile Include="Connections\Sockets\SocketServer.cs" />
     <Compile Include="Connections\Types\ConnectionTypes.cs" />
