@@ -16,7 +16,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
     {
         #region Параметры и конструктор.
         private const string DEF_REPLY_MSG = "Сообщение получено.";
-        private Guid serverId;
         private TcpListener listener;
         private int maxConnections;
         private Task listeningInputConnections;        

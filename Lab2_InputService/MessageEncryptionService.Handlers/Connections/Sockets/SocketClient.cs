@@ -11,17 +11,16 @@ using MessageEncryptionService.Handlers.Connections.Messages;
 
 namespace MessageEncryptionService.Handlers.Connections.Sockets
 {
-    public class SocketClient : IClientConnection
+    public class SocketClient : ClientConnectionBase, IMessageReceiver
     {
         #region Параметры и конструктор.
-        public event EventHandler<Exception> ConnectionErrorRised;
         private TcpClient client;
-        private IPAddress ipAdress;
-        private Guid clientId;        
+        private IPAddress ipAdress;      
         int port;
-        MessageEncryptionHandler encryptionHandler;
 
-        public bool Connected { get; set; }
+        //public event EventHandler<MessageModel> NewMessage;
+        //public event EventHandler<Exception> ConnectionError;
+
         public SocketClient(string ip, int port)
         {
             clientId = Guid.NewGuid();
@@ -31,7 +30,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             this.port = port;            
         }
         #endregion
-        public bool Connect()
+        public override bool Connect()
         {
             try
             {                
@@ -45,7 +44,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return Connected;
         }
 
-        public bool CheckConnection()
+        public override bool CheckConnection()
         {
             //bool connected = client.Connected && client.Client.Poll(1000, SelectMode.SelectRead);
             //if (connected)
@@ -57,7 +56,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return Connected; //пока оставлю заглушку
         }        
 
-        public MessageModel Send(MessageModel message, bool encrypted = true)
+        public override MessageModel Send(MessageModel message, bool encrypted = true)
         {
             MessageModel response = null;
             if (CheckConnection())
@@ -72,18 +71,15 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
                         message.SenderId = clientId;
 
-                        MessageModel request = (MessageModel) message.Clone();
-                        if (encrypted && encryptionHandler != null)
-                        {                            
-                            request = encryptionHandler.EncryptMessage(request);
-                        }
+                        MessageModel request = PrepareMessage(message, encrypted);
+
                         writer.Write(MessageCustomXmlConverter.ToXml(request));
                         writer.Flush();
-                        response = MessageCustomXmlConverter.ToModel(reader.ReadString());
+                        response = MessageCustomXmlConverter.ToModel(reader.ReadString()); //нужно сделать асинхронный вызов
                     }
                     catch(Exception e)
                     {
-                        ConnectionErrorRised?.Invoke(this, e);
+                        OnConnectionError(this, e);
                     }
                     finally
                     {
@@ -95,13 +91,13 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return response;
         }
 
-        public void Disconnect()
+        public override void Disconnect()
         {
             client.Close();
             Connected = false;
         }
 
-        public void AskAsymKey()
+        public override void AskAsymKey()
         {
             MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
             MessageModel response = Send(request, false);            

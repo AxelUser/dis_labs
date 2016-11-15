@@ -8,9 +8,11 @@ using System.Net.Sockets;
 
 namespace MessageEncryptionService.Handlers.Connections
 {
-    public abstract class ServerConnectionBase
+    public abstract class ServerConnectionBase: IMessageReceiver
     {
         public event EventHandler<MessageModel> NewMessage;
+        public event EventHandler<Exception> ConnectionError;
+
         public abstract void StartServer();
         public abstract void StopServer();
         public abstract void DisconnectClient(Guid client);
@@ -19,6 +21,7 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract MessageModel ReceiveNewMessage();
 
         protected IProgress<MessageModel> onNewMessageHandler;
+        protected Guid serverId;
 
         public ServerConnectionBase()
         {

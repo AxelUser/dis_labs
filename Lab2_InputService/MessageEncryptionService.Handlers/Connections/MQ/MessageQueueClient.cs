@@ -8,7 +8,7 @@ using RabbitMQ.Client;
 
 namespace MessageEncryptionService.Handlers.Connections.MQ
 {
-    class MessageQueueClient : IClientConnection
+    class MessageQueueClient : ClientConnectionBase
     {
         RabbitMQ.Client.ConnectionFactory mqConnectionFactory;
         IConnection mqConnection;
@@ -25,32 +25,20 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
                 Port = 5672
             };
         }
-        public bool Connected
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         public event EventHandler<Exception> ConnectionErrorRised;
 
-        public void AskAsymKey()
+        public override void AskAsymKey()
         {
             throw new NotImplementedException();
         }
 
-        public bool CheckConnection()
+        public override bool CheckConnection()
         {
             return true;
         }
 
-        public bool Connect()
+        public override bool Connect()
         {
             try
             {
@@ -64,12 +52,12 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             return Connected;
         }
 
-        public void Disconnect()
+        public override void Disconnect()
         {
             mqConnection.Close();
         }
 
-        public MessageModel Send(MessageModel message, bool encrypted = true)
+        public override MessageModel Send(MessageModel message, bool encrypted = true)
         {
             throw new NotImplementedException();
         }

@@ -29,9 +29,9 @@ namespace MessageEncryptionService.Handlers.Connections
             return server;
         }
 
-        public static IClientConnection CreateClientConnection(ConnectionTypes conType)
+        public static ClientConnectionBase CreateClientConnection(ConnectionTypes conType)
         {
-            IClientConnection client = null;
+            ClientConnectionBase client = null;
             switch (conType)
             {
                 case ConnectionTypes.Sockets:

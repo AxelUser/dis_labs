@@ -15,7 +15,7 @@ namespace MessageEncryptionService.Client
 {
     public partial class FormMain : Form
     {
-        private IClientConnection client;
+        private ClientConnectionBase client;
         private Guid clientId;
 
         private bool connected;
@@ -40,15 +40,7 @@ namespace MessageEncryptionService.Client
             connected = true;
             client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
 
-            client.ConnectionErrorRised += (s, ex) =>
-            {
-                if (connected)
-                {
-                    MessageBox.Show(ex.Message);
-                    connected = false;
-                    client.Disconnect();
-                }
-            };
+            SubscribeUIUpdate(client);
 
             if (!client.Connect())
             {
@@ -58,6 +50,19 @@ namespace MessageEncryptionService.Client
             {
                 client.AskAsymKey();
             }
+        }
+
+        private void SubscribeUIUpdate(ClientConnectionBase client)
+        {
+            client.ConnectionError += (s, ex) =>
+            {                    
+                if (connected)
+                {
+                    MessageBox.Show(ex.Message);
+                    connected = false;
+                    client.Disconnect();
+                }
+            };
         }
     }
 }
