@@ -26,8 +26,6 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             };
         }
 
-        public event EventHandler<Exception> ConnectionErrorRised;
-
         public override void AskAsymKey()
         {
             throw new NotImplementedException();
