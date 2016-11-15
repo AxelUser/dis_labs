@@ -45,7 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connections\IClientConnection.cs" />
+    <Compile Include="Connections\ClientConnectionBase.cs" />
+    <Compile Include="Connections\IMessageReceiver.cs" />
     <Compile Include="Connections\Messages\MessageCustomXmlSerializer.cs" />
     <Compile Include="Connections\Messages\MessageEncryptionHandler.cs" />
     <Compile Include="Connections\Messages\ReplyModel.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Data\SymmetricEncryptionHandler.cs" />
     <Compile Include="Connections\Messages\MessageModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Helpers\ReflectionHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
