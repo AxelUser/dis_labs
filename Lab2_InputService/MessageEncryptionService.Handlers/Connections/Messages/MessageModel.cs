@@ -9,6 +9,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
 {
     public class MessageModel: ICloneable
     {
+        public Guid? TicketId { get; set; }
         public MessageTypes MessageType { get; private set; }
         public Guid SenderId { get; set; }
         public bool IsBodyEncrypted { get; set; }
@@ -24,6 +25,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
         {
             return new MessageModel(this.MessageType)
             {
+                TicketId = this.TicketId,
                 SenderId = this.SenderId,
                 IsBodyEncrypted = this.IsBodyEncrypted,
                 DESIV = this.DESIV,

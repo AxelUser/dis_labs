@@ -15,6 +15,10 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
         {          
             var root = new XElement("Message");
             root.SetAttributeValue("version", formatVersion);
+            if (message.TicketId != null)
+            {
+                root.Add(new XElement("TicketId", message.TicketId));
+            }
             root.Add(new XElement("MessageType", message.MessageType));
             if(message is ReplyModel)
             {
@@ -48,6 +52,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             {
                 message = new MessageModel(type);
             }
+            message.TicketId = Guid.Parse(docRoot.Elements().SingleOrDefault(e => e.Name == "TicketId")?.Value);
             message.SenderId = Guid.Parse(docRoot.Elements().Single(e => e.Name == "Sender").Value);
             message.IsBodyEncrypted = Boolean.Parse(docRoot.Elements().Single(e => e.Name == "IsBodyEncrypted").Value);
             message.DESKey = docRoot.Elements().Single(e => e.Name == "DESKey").Value;
