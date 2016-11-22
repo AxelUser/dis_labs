@@ -38,7 +38,7 @@ namespace MessageEncryptionService.Client
         {
             clientId = Guid.NewGuid();
             connected = true;
-            client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
+            client = ConnectionFactory.CreateClientConnection(ConnectionTypes.RabbitMQ);
 
             SubscribeUIUpdate(client);
 

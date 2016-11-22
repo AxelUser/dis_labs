@@ -1,4 +1,5 @@
-﻿using MessageEncryptionService.Handlers.Connections.Sockets;
+﻿using MessageEncryptionService.Handlers.Connections.MQ;
+using MessageEncryptionService.Handlers.Connections.Sockets;
 using MessageEncryptionService.Handlers.Connections.Types;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace MessageEncryptionService.Handlers.Connections
                     server = new SocketServer(DEF_HOST, DEF_PORT);
                     break;
                 case ConnectionTypes.RabbitMQ:
+                    server = new MessageQueueServer();
                     break;
 
             }
@@ -38,6 +40,7 @@ namespace MessageEncryptionService.Handlers.Connections
                     client = new SocketClient(DEF_HOST, DEF_PORT);
                     break;
                 case ConnectionTypes.RabbitMQ:
+                    client = new MessageQueueClient();
                     break;
             }
             return client;
