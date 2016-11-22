@@ -42,6 +42,17 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract bool Connect();
         public abstract void Disconnect();
         public abstract MessageModel Send(MessageModel message, bool encrypted = true);
-        public abstract void AskAsymKey();
+        public void AskAsymKey()
+        {
+            MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
+            MessageModel response = Send(request, false);
+            string key = response.Body;
+            InitEncryptionHandler(key);
+        }
+
+        protected void InitEncryptionHandler(string rsaKey)
+        {
+            encryptionHandler = new MessageEncryptionHandler(new Data.AsymmetricEncryptionHandler(rsaKey));
+        }
     }
 }

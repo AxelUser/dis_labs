@@ -15,6 +15,8 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         IModel inputChannel;
         IModel outputChannel;
 
+        public event EventHandler<MessageModel> NewMessageReceived;
+
         public MQManager(string sendQueue, string receiveQueue)
         {
             mqConnectionFactory = new RabbitMQ.Client.ConnectionFactory()

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MessageEncryptionService.Handlers.Connections.Messages;
 using System.Net.Sockets;
+using MessageEncryptionService.Handlers.Data;
 
 namespace MessageEncryptionService.Handlers.Connections
 {
@@ -12,13 +13,11 @@ namespace MessageEncryptionService.Handlers.Connections
     {
         public event EventHandler<MessageModel> NewMessage;
         public event EventHandler<Exception> ConnectionError;
+        protected MessageEncryptionHandler encryptionHandler;
 
         public abstract void StartServer();
         public abstract void StopServer();
         public abstract void DisconnectClient(Guid client);
-        public abstract ReplyModel SendRSAKey(Guid client);
-        public abstract ReplyModel ReplyClient(Guid client, MessageModel request);
-        public abstract MessageModel ReceiveNewMessage();
 
         protected IProgress<MessageModel> onNewMessageHandler;
         protected Guid serverId;
@@ -26,6 +25,7 @@ namespace MessageEncryptionService.Handlers.Connections
         public ServerConnectionBase()
         {
             onNewMessageHandler = new Progress<MessageModel>(m => NewMessage?.Invoke(this, m));
+            encryptionHandler = new MessageEncryptionHandler(new AsymmetricEncryptionHandler());
         }
 
         public ReplyModel MessageRouting(MessageModel message, Guid sender)
@@ -61,7 +61,15 @@ namespace MessageEncryptionService.Handlers.Connections
                     default: return null;
                 }
             }
-        }        
+        }
+
+        public ReplyModel SendRSAKey(Guid client)
+        {
+            return new ReplyModel(Types.MessageTypes.AskRSAKey)
+            {
+                Body = encryptionHandler.GetPublicAsymKey()
+            };
+        }
 
         public void AddData(MessageModel message, Guid client)
         {

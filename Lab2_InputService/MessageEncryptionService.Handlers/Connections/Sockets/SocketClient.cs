@@ -18,9 +18,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private IPAddress ipAdress;      
         int port;
 
-        //public event EventHandler<MessageModel> NewMessage;
-        //public event EventHandler<Exception> ConnectionError;
-
         public SocketClient(string ip, int port)
         {
             clientId = Guid.NewGuid();
@@ -95,19 +92,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             client.Close();
             Connected = false;
-        }
-
-        public override void AskAsymKey()
-        {
-            MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
-            MessageModel response = Send(request, false);            
-            string key = response.Body;
-            InitEncryptionHandler(key);
-        }
-
-        private void InitEncryptionHandler(string rsaKey)
-        {
-            encryptionHandler = new MessageEncryptionHandler(new Data.AsymmetricEncryptionHandler(rsaKey));
         }
     }
 }

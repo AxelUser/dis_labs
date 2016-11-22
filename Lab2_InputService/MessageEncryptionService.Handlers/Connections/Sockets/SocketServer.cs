@@ -22,9 +22,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private CancellationTokenSource ctsMain;
         private Dictionary<Guid, Task> activeConnectionListeners;
         private Dictionary<Guid, CancellationTokenSource> cancellationSourcesForListeners;
-        private MessageEncryptionHandler encryptionHandler;
 
-        public SocketServer(string domain, int port, int maxConnections = 10)
+        public SocketServer(string domain, int port, int maxConnections = 10): base()
         {
             serverId = Guid.NewGuid();
             this.maxConnections = maxConnections;
@@ -33,14 +32,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             listener = new TcpListener(ipAdress, port);
             activeConnectionListeners = new Dictionary<Guid, Task>();
             cancellationSourcesForListeners = new Dictionary<Guid, CancellationTokenSource>();
-            encryptionHandler = new MessageEncryptionHandler(new AsymmetricEncryptionHandler());
         }
         #endregion
-
-        public override MessageModel ReceiveNewMessage()
-        {
-            throw new NotImplementedException();
-        }
 
         public override void StartServer()
         {
@@ -194,19 +187,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         }
 
         public override void DisconnectClient(Guid client)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ReplyModel SendRSAKey(Guid client)
-        {
-            return new ReplyModel(Types.MessageTypes.AskRSAKey)
-            {
-                Body = encryptionHandler.GetPublicAsymKey()
-            };
-        }
-
-        public override ReplyModel ReplyClient(Guid client, MessageModel message)
         {
             throw new NotImplementedException();
         }
