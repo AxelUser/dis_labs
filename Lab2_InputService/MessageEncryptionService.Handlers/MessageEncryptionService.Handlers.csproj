@@ -62,9 +62,9 @@
     <Compile Include="Data\AsymmetricEncryptionHandler.cs" />
     <Compile Include="Data\DataTransformHandler.cs" />
     <Compile Include="Connections\ServerConnectionBase.cs" />
-    <Compile Include="Data\OperatorInfoViewModel.cs" />
     <Compile Include="Data\SymmetricEncryptionHandler.cs" />
     <Compile Include="Connections\Messages\MessageModel.cs" />
+    <Compile Include="Data\TaskInfoViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\ReflectionHelpers.cs" />
   </ItemGroup>
