@@ -36,14 +36,14 @@
             this.listBoxLogs.FormattingEnabled = true;
             this.listBoxLogs.Location = new System.Drawing.Point(12, 12);
             this.listBoxLogs.Name = "listBoxLogs";
-            this.listBoxLogs.Size = new System.Drawing.Size(260, 238);
+            this.listBoxLogs.Size = new System.Drawing.Size(689, 238);
             this.listBoxLogs.TabIndex = 0;
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.ClientSize = new System.Drawing.Size(713, 261);
             this.Controls.Add(this.listBoxLogs);
             this.Name = "FormMain";
             this.Text = "Service Server";

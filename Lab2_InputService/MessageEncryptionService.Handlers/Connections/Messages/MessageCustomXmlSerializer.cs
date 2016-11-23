@@ -52,7 +52,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             {
                 message = new MessageModel(type);
             }
-            message.TicketId = Guid.Parse(docRoot.Elements().SingleOrDefault(e => e.Name == "TicketId")?.Value);
+            message.TicketId = Guid.Parse(docRoot.Elements().SingleOrDefault(e => e.Name == "TicketId").Value);
             message.SenderId = Guid.Parse(docRoot.Elements().Single(e => e.Name == "Sender").Value);
             message.IsBodyEncrypted = Boolean.Parse(docRoot.Elements().Single(e => e.Name == "IsBodyEncrypted").Value);
             message.DESKey = docRoot.Elements().Single(e => e.Name == "DESKey").Value;

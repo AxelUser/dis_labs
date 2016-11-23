@@ -9,7 +9,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
 {
     public class MessageModel: ICloneable
     {
-        public Guid? TicketId { get; set; }
+        public Guid TicketId { get; set; }
         public MessageTypes MessageType { get; private set; }
         public Guid SenderId { get; set; }
         public bool IsBodyEncrypted { get; set; }
@@ -19,6 +19,7 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
         public MessageModel(MessageTypes type)
         {
             this.MessageType = type;
+            TicketId = Guid.NewGuid();
         }
 
         public virtual object Clone()

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MessageEncryptionService.Handlers.Connections.Messages;
+using MessageEncryptionService.Handlers.Helpers;
 
 namespace MessageEncryptionService.Server
 {
@@ -31,7 +32,7 @@ namespace MessageEncryptionService.Server
 
         private void Server_NewMessage(object sender, MessageModel e)
         {
-            listBoxLogs.Items.Add(e.Body);
+            listBoxLogs.Items.Add($"{e.SenderId}: {e.MessageType.GetTypeCaption()}");
         }
 
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)

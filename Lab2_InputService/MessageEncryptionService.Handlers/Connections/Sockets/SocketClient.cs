@@ -18,9 +18,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private IPAddress ipAdress;      
         int port;
 
-        public SocketClient(string ip, int port)
+        public SocketClient(string ip, int port): base()
         {
-            clientId = Guid.NewGuid();
             ipAdress = IPAddress.Parse(ip);
             var s = ipAdress.ToString();
             client = new TcpClient();
@@ -53,9 +52,9 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return Connected; //пока оставлю заглушку
         }        
 
-        public override MessageModel Send(MessageModel message, bool encrypted = true)
+        public override ReplyModel Send(MessageModel message, bool encrypted = true)
         {
-            MessageModel response = null;
+            ReplyModel response = null;
             if (CheckConnection())
             {
                 var socketStream = client.GetStream();
@@ -72,7 +71,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
                         writer.Write(MessageCustomXmlConverter.ToXml(request));
                         writer.Flush();
-                        response = MessageCustomXmlConverter.ToModel(reader.ReadString()); //нужно сделать асинхронный вызов
+                        response = (ReplyModel)MessageCustomXmlConverter.ToModel(reader.ReadString()); //нужно сделать асинхронный вызов
                     }
                     catch(Exception e)
                     {

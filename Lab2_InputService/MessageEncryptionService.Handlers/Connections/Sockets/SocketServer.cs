@@ -55,14 +55,13 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public void RegisterNewClient(Guid clientId, TcpClient client)
         {
-            var handleProgress = new Progress<MessageModel>(value => OnNewMessage(value));
             var handleException = new Progress<Tuple<Guid, Exception>>(tp =>
             {
                 Guid id = tp.Item1;
                 cancellationSourcesForListeners[id].Cancel();
             });
             CancellationTokenSource clientCts = new CancellationTokenSource();
-            Task handleClientTask = HandleClient(handleProgress, handleException, clientCts.Token, client, clientId);
+            Task handleClientTask = HandleClient(handleException, clientCts.Token, client, clientId);
             if (!activeConnectionListeners.ContainsKey(clientId))
             {
                 lock (cancellationSourcesForListeners)
@@ -143,7 +142,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return listenInputConnections;
         }
 
-        private Task HandleClient(IProgress<MessageModel> progressHandler, IProgress<Tuple<Guid, Exception>> exceptionHandler, CancellationToken ct, TcpClient clientToListen, Guid clientId)
+        private Task HandleClient(IProgress<Tuple<Guid, Exception>> exceptionHandler, CancellationToken ct, TcpClient clientToListen, Guid clientId)
         {
             Task listeningTask = new Task(() =>
             {
@@ -161,15 +160,9 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         var reqRaw = reader.ReadString();
                         MessageModel request = MessageCustomXmlConverter.ToModel(reqRaw);
 
-                        if (request.IsBodyEncrypted)
-                        {
-                            request = encryptionHandler.DecryptMessage(request);
-                        }
-
-                        MessageModel response = MessageRouting(request, clientId);
+                        MessageModel response = MessageRouting(ref request, clientId);
                         writer.Write(MessageCustomXmlConverter.ToXml(response));
-                        writer.Flush();
-                        progressHandler.Report(request);
+                        writer.Flush();                       
                     }
                     catch(Exception e)
                     {

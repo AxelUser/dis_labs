@@ -16,11 +16,12 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         IModel mqChannel;
         EventingBasicConsumer mqConsumer;
         string callbackQueue;
-        Dictionary<Guid, MessageModel> pendingRequests;
+        string rpcQueueName = "rpc_queue";
+        Dictionary<Guid, ReplyModel> pendingRequests;
 
         public MessageQueueClient()
         {
-            pendingRequests = new Dictionary<Guid, MessageModel>();
+            pendingRequests = new Dictionary<Guid, ReplyModel>();
         }
 
         public override bool CheckConnection()
@@ -34,6 +35,7 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             {
                 InitializeConnection();
                 InitializeQueue(mqChannel);
+                InitializeConsumer(mqChannel);
                 mqChannel.BasicConsume(callbackQueue, false, mqConsumer);
                 Connected = true;
             }
@@ -50,18 +52,18 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             mqConnection.Close();
         }
 
-        public override MessageModel Send(MessageModel message, bool encrypted = true)
+        public override ReplyModel Send(MessageModel message, bool encrypted = true)
         {
-            message.TicketId = Guid.NewGuid();
             MessageModel request = PrepareMessage(message, encrypted);
             byte[] requestBody = Encoding.UTF8.GetBytes(MessageCustomXmlConverter.ToXml(request));
             var requestProps = mqChannel.CreateBasicProperties();
             requestProps.CorrelationId = request.TicketId.ToString();
+            requestProps.ReplyTo = callbackQueue;
             mqChannel.BasicPublish(exchange: "",
-                routingKey: callbackQueue,
+                routingKey: rpcQueueName,
                 basicProperties: requestProps,
                 body: requestBody);
-            pendingRequests.Add((Guid)request.TicketId, null);
+            pendingRequests.Add(request.TicketId, null);
             while (true)
             {
                 lock (pendingRequests)
@@ -99,18 +101,18 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         {
             mqConsumer = new EventingBasicConsumer(channel);
 
-            mqConsumer.Received += (sender, ea) =>
+            mqConsumer.Received += (ch, ea) =>
             {
                 string responseBody = Encoding.UTF8.GetString(ea.Body);
-                MessageModel responseModel = MessageCustomXmlConverter.ToModel(responseBody);
+                ReplyModel responseModel = (ReplyModel)MessageCustomXmlConverter.ToModel(responseBody);
                 lock (pendingRequests)
                 {
-                    if (pendingRequests.ContainsKey((Guid)responseModel.TicketId))
+                    if (pendingRequests.ContainsKey(responseModel.TicketId))
                     {
-                        pendingRequests[(Guid)responseModel.TicketId] = responseModel;
+                        pendingRequests[responseModel.TicketId] = responseModel;
                     }
                 }
-                channel.BasicAck(ea.DeliveryTag, false);
+                ((EventingBasicConsumer)ch).Model.BasicAck(ea.DeliveryTag, false);
             };
         }
     }

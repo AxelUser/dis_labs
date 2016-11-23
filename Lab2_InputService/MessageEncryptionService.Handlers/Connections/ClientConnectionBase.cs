@@ -15,6 +15,10 @@ namespace MessageEncryptionService.Handlers.Connections
         public event EventHandler<MessageModel> NewMessage;
         public event EventHandler<Exception> ConnectionError;
 
+        public ClientConnectionBase()
+        {
+            clientId = Guid.NewGuid();
+        }
         protected MessageModel PrepareMessage(MessageModel message, bool encryprt)
         {
             message.SenderId = clientId;
@@ -22,7 +26,7 @@ namespace MessageEncryptionService.Handlers.Connections
             MessageModel newMessage = (MessageModel)message.Clone();
             if (encryprt && encryptionHandler != null)
             {
-                newMessage = encryptionHandler.DecryptMessage(newMessage);
+                newMessage = encryptionHandler.EncryptMessage(newMessage);
             }
             return newMessage;
         }
@@ -41,13 +45,14 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract bool CheckConnection();
         public abstract bool Connect();
         public abstract void Disconnect();
-        public abstract MessageModel Send(MessageModel message, bool encrypted = true);
-        public void AskAsymKey()
+        public abstract ReplyModel Send(MessageModel message, bool encrypted = true);
+        public ReplyModel AskAsymKey()
         {
             MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
-            MessageModel response = Send(request, false);
+            ReplyModel response = Send(request, false);
             string key = response.Body;
             InitEncryptionHandler(key);
+            return response;
         }
 
         protected void InitEncryptionHandler(string rsaKey)

@@ -78,8 +78,7 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
                 var requestProps = ea.BasicProperties;
                 MessageModel requestModel = MessageCustomXmlConverter.ToModel(requestBody);
 
-                ReplyModel responseModel = MessageRouting(requestModel, requestModel.SenderId);                
-                
+                ReplyModel responseModel = MessageRouting(ref requestModel, requestModel.SenderId);
                 var responseProps = channel.CreateBasicProperties();
                 responseProps.CorrelationId = requestProps.CorrelationId;
                 byte[] responseBody = Encoding.UTF8.GetBytes(MessageCustomXmlConverter.ToXml(responseModel));

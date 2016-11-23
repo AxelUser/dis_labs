@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using MessageEncryptionService.Handlers.Connections;
 using MessageEncryptionService.Handlers.Connections.Types;
 using MessageEncryptionService.Handlers.Connections.Messages;
-
+using MessageEncryptionService.Handlers.Helpers;
 namespace MessageEncryptionService.Client
 {
     public partial class FormMain : Form
@@ -31,7 +31,8 @@ namespace MessageEncryptionService.Client
             {
                 Body = msgText
             };
-            client.Send(data);
+            var resp = client.Send(data);
+            HandleResponse(resp);
         }
 
         private void FormMain_Load(object sender, EventArgs e)
@@ -48,7 +49,8 @@ namespace MessageEncryptionService.Client
             }
             else
             {
-                client.AskAsymKey();
+                var resp = client.AskAsymKey();
+                HandleResponse(resp);
             }
         }
 
@@ -63,6 +65,11 @@ namespace MessageEncryptionService.Client
                     client.Disconnect();
                 }
             };
+        }
+
+        private void HandleResponse(ReplyModel response)
+        {
+            MessageBox.Show($"Ответ на \"{response.ReplyType.GetTypeCaption()}\":{response.Body}");
         }
     }
 }

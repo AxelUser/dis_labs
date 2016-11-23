@@ -28,38 +28,54 @@ namespace MessageEncryptionService.Handlers.Connections
             encryptionHandler = new MessageEncryptionHandler(new AsymmetricEncryptionHandler());
         }
 
-        public ReplyModel MessageRouting(MessageModel message, Guid sender)
-        {
-            if(message.MessageType == Types.MessageTypes.Reply)
+        public ReplyModel MessageRouting(ref MessageModel message, Guid sender, bool notify = true)
+        {            
+            if (message.IsBodyEncrypted)
+            {
+                message = encryptionHandler.DecryptMessage(message);
+            }
+            if (message.MessageType == Types.MessageTypes.Reply)
             {
                 //Обработка ответов. Пока не придумал.
                 return null;
             }
             else
             {
+                ReplyModel response;
                 //Обработка запросов.
                 switch (message.MessageType)
                 {
                     case Types.MessageTypes.AskRSAKey:
-                        return SendRSAKey(sender);
+                        response = SendRSAKey(sender);
+                        break;
                     case Types.MessageTypes.CloseConnection:
                         DisconnectClient(sender);
-                        return new ReplyModel(Types.MessageTypes.CloseConnection)
+                        response = new ReplyModel(Types.MessageTypes.CloseConnection)
                         {
                             SenderId = sender,
                             IsBodyEncrypted = false,
                             Body = "Завершение соединения подтверждено."
                         };
+                        break;
                     case Types.MessageTypes.SendData:
                         AddData(message, sender);
-                        return new ReplyModel(Types.MessageTypes.SendData)
+                        response = new ReplyModel(Types.MessageTypes.SendData)
                         {
                             SenderId = sender,
                             IsBodyEncrypted = false,
                             Body = "Данные добавлены."
                         };
-                    default: return null;
+                        break;
+                    default:
+                        response = null;
+                        break;
                 }
+                if(notify)
+                {
+                    OnNewMessage(message);
+                }     
+                response.TicketId = message.TicketId;
+                return response;
             }
         }
 
