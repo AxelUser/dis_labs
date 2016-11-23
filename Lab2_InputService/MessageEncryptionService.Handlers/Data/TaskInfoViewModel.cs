@@ -14,7 +14,7 @@ namespace MessageEncryptionService.Handlers.Data
         public string ExecutorFullName { get; set; }
         public string StatusName { get; set; }
         public string StatusCaption { get; set; }
-        public IEquatable<string> Tags { get; set; }
+        public IEnumerable<string> Tags { get; set; }
         public int EstimatedDifficulty { get; set; }
         public string Text { get; set; }
         public DateTime CreationDate { get; set; }

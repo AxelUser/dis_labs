@@ -45,11 +45,11 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract bool CheckConnection();
         public abstract bool Connect();
         public abstract void Disconnect();
-        public abstract ReplyModel Send(MessageModel message, bool encrypted = true);
-        public ReplyModel AskAsymKey()
+        public abstract Task<ReplyModel> Send(MessageModel message, bool encrypted = true);
+        public async Task<ReplyModel> AskAsymKey()
         {
             MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
-            ReplyModel response = Send(request, false);
+            ReplyModel response = await Send(request, false);
             string key = response.Body;
             InitEncryptionHandler(key);
             return response;

@@ -52,29 +52,35 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             mqConnection.Close();
         }
 
-        public override ReplyModel Send(MessageModel message, bool encrypted = true)
+        public override async Task<ReplyModel> Send(MessageModel message, bool encrypted = true)
         {
             MessageModel request = PrepareMessage(message, encrypted);
             byte[] requestBody = Encoding.UTF8.GetBytes(MessageCustomXmlConverter.ToXml(request));
             var requestProps = mqChannel.CreateBasicProperties();
             requestProps.CorrelationId = request.TicketId.ToString();
             requestProps.ReplyTo = callbackQueue;
-            mqChannel.BasicPublish(exchange: "",
-                routingKey: rpcQueueName,
-                basicProperties: requestProps,
-                body: requestBody);
-            pendingRequests.Add(request.TicketId, null);
-            while (true)
+            await Task.Run(() =>
             {
-                lock (pendingRequests)
+                mqChannel.BasicPublish(exchange: "",
+                    routingKey: rpcQueueName,
+                    basicProperties: requestProps,
+                    body: requestBody);
+            });
+            pendingRequests.Add(request.TicketId, null);
+            return await Task.Run(() =>
+            {
+                while (true)
                 {
-                    var response = pendingRequests[(Guid)request.TicketId];
-                    if (response != null)
+                    lock (pendingRequests)
                     {
-                        return response;
+                        var response = pendingRequests[(Guid)request.TicketId];
+                        if (response != null)
+                        {
+                            return response;
+                        }
                     }
                 }
-            }
+            });
         }
 
         private void InitializeConnection()

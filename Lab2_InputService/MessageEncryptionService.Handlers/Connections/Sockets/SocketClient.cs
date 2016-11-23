@@ -52,7 +52,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return Connected; //пока оставлю заглушку
         }        
 
-        public override ReplyModel Send(MessageModel message, bool encrypted = true)
+        public override async Task<ReplyModel> Send(MessageModel message, bool encrypted = true)
         {
             ReplyModel response = null;
             if (CheckConnection())
@@ -68,10 +68,15 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                         message.SenderId = clientId;
 
                         MessageModel request = PrepareMessage(message, encrypted);
-
-                        writer.Write(MessageCustomXmlConverter.ToXml(request));
-                        writer.Flush();
-                        response = (ReplyModel)MessageCustomXmlConverter.ToModel(reader.ReadString()); //нужно сделать асинхронный вызов
+                        await Task.Run(() => 
+                        {
+                            writer.Write(MessageCustomXmlConverter.ToXml(request));
+                            writer.Flush();
+                        });
+                        response = await Task<ReplyModel>.Run(() => 
+                        {
+                            return (ReplyModel)MessageCustomXmlConverter.ToModel(reader.ReadString());
+                        });
                     }
                     catch(Exception e)
                     {

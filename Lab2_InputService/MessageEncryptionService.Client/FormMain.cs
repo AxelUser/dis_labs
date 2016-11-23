@@ -24,22 +24,22 @@ namespace MessageEncryptionService.Client
             InitializeComponent();
         }
 
-        private void btnSend_Click(object sender, EventArgs e)
+        private async void btnSend_Click(object sender, EventArgs e)
         {
             string msgText = "Проверка.";
             MessageModel data = new MessageModel(MessageTypes.SendData)
             {
                 Body = msgText
             };
-            var resp = client.Send(data);
+            var resp = await client.Send(data);
             HandleResponse(resp);
         }
 
-        private void FormMain_Load(object sender, EventArgs e)
+        private async void FormMain_Load(object sender, EventArgs e)
         {
             clientId = Guid.NewGuid();
             connected = true;
-            client = ConnectionFactory.CreateClientConnection(ConnectionTypes.RabbitMQ);
+            client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
 
             SubscribeUIUpdate(client);
 
@@ -49,7 +49,7 @@ namespace MessageEncryptionService.Client
             }
             else
             {
-                var resp = client.AskAsymKey();
+                var resp = await client.AskAsymKey();
                 HandleResponse(resp);
             }
         }
