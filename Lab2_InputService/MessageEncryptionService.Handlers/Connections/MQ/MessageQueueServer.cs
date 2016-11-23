@@ -16,11 +16,22 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         IModel channel;
         EventingBasicConsumer mqConsumer;
         string rpcQueueName;
+        string userName;
+        string password;
+        string virtualHost;
+        string hostName;
+        int port;
+
         string consumerTag;
 
-        public MessageQueueServer(): base()
+        public MessageQueueServer(string userName, string password, string virtualHost, string hostName, string port, string rpcQueueName) : base()
         {
-            
+            this.userName = userName;
+            this.password = password;
+            this.virtualHost = virtualHost;
+            this.hostName = hostName;
+            this.port = int.Parse(port);
+            this.rpcQueueName = rpcQueueName;
         }
 
         public override void DisconnectClient(Guid client)
@@ -44,14 +55,13 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
 
         private void InitializeConnection()
         {
-            rpcQueueName = "rpc_queue";
             mqConnectionFactory = new RabbitMQ.Client.ConnectionFactory()
             {
-                UserName = "guest",
-                Password = "guest",
-                VirtualHost = "/",
-                HostName = "localhost",
-                Port = 5672
+                UserName =userName,
+                Password = password,
+                VirtualHost = virtualHost,
+                HostName = hostName,
+                Port = port
             };
             mqConnection = mqConnectionFactory.CreateConnection();
             channel = mqConnection.CreateModel();

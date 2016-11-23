@@ -15,10 +15,7 @@ namespace MessageEncryptionService.Client
 {
     public partial class FormMain : Form
     {
-        private ClientConnectionBase client;
-        private Guid clientId;
-
-        private bool connected;
+        private Dictionary<ConnectionTypes, ClientConnectionBase> clients;
         public FormMain()
         {
             InitializeComponent();
@@ -31,45 +28,80 @@ namespace MessageEncryptionService.Client
             {
                 Body = msgText
             };
-            var resp = await client.Send(data);
+            var resp = await GetSelectedClient().Send(data);
             HandleResponse(resp);
         }
 
         private async void FormMain_Load(object sender, EventArgs e)
         {
-            clientId = Guid.NewGuid();
-            connected = true;
-            client = ConnectionFactory.CreateClientConnection(ConnectionTypes.Sockets);
+            btnSend.Enabled = false;
+            clients = new Dictionary<ConnectionTypes, ClientConnectionBase>();
 
-            SubscribeUIUpdate(client);
-
-            if (!client.Connect())
-            {
-                MessageBox.Show("Ошибка подключения клиента к серверу.");
-            }
-            else
-            {
-                var resp = await client.AskAsymKey();
-                HandleResponse(resp);
-            }
+            var clientSockets = await InitializeClient(ConnectionTypes.Sockets);
+            clients.Add(ConnectionTypes.Sockets, clientSockets);
+            var clientMQ = await InitializeClient(ConnectionTypes.RabbitMQ);
+            clients.Add(ConnectionTypes.RabbitMQ, clientMQ);
+            btnSend.Enabled = true;
         }
 
         private void SubscribeUIUpdate(ClientConnectionBase client)
         {
             client.ConnectionError += (s, ex) =>
             {                    
-                if (connected)
-                {
-                    MessageBox.Show(ex.Message);
-                    connected = false;
-                    client.Disconnect();
-                }
+                MessageBox.Show(ex.Message);                
             };
         }
 
         private void HandleResponse(ReplyModel response)
         {
-            MessageBox.Show($"Ответ на \"{response.ReplyType.GetTypeCaption()}\":{response.Body}");
+            if (response != null)
+            {
+                MessageBox.Show($"Response for \"{response.ReplyType.GetTypeCaption()}\": {response.Body}");
+            }
+            else
+            {
+                MessageBox.Show("Empty response!");
+            }
+        }
+
+        private async Task<ClientConnectionBase> InitializeClient(ConnectionTypes type)
+        {
+            var client = ConnectionFactory.CreateClientConnection(type);
+
+            SubscribeUIUpdate(client);
+
+            bool isConnected = await Task.Run(() => client.Connect());
+
+            if (!isConnected)
+            {
+                MessageBox.Show($"Could not connect to {type.ToString()}");
+            }
+            else
+            {
+                var resp = await client.AskAsymKey();
+                HandleResponse(resp);
+            }
+            return client;
+        }
+
+        private ClientConnectionBase GetSelectedClient()
+        {
+            if (radioButtonSockets.Checked)
+            {
+                return clients[ConnectionTypes.Sockets];
+            }
+            else
+            {
+                return clients[ConnectionTypes.RabbitMQ];
+            }
+        }
+
+        private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            foreach (var client in clients)
+            {
+                client.Value.Disconnect();
+            }
         }
     }
 }

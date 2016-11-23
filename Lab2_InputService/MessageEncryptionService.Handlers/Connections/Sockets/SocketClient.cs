@@ -18,12 +18,12 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private IPAddress ipAdress;      
         int port;
 
-        public SocketClient(string ip, int port): base()
+        public SocketClient(string ip, string port): base()
         {
             ipAdress = IPAddress.Parse(ip);
             var s = ipAdress.ToString();
             client = new TcpClient();
-            this.port = port;            
+            this.port = int.Parse(port);
         }
         #endregion
         public override bool Connect()
@@ -73,7 +73,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                             writer.Write(MessageCustomXmlConverter.ToXml(request));
                             writer.Flush();
                         });
-                        response = await Task<ReplyModel>.Run(() => 
+                        response = await Task.Run(() => 
                         {
                             return (ReplyModel)MessageCustomXmlConverter.ToModel(reader.ReadString());
                         });

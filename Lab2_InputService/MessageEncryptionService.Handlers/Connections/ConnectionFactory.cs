@@ -3,6 +3,7 @@ using MessageEncryptionService.Handlers.Connections.Sockets;
 using MessageEncryptionService.Handlers.Connections.Types;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,9 +12,14 @@ namespace MessageEncryptionService.Handlers.Connections
 {
     public class ConnectionFactory
     {
-        public const string DEF_HOST = "127.0.0.1";
-        public const int DEF_PORT = 8888;
-        public const string DEF_QUEUE_NAME = ".\\private$\\EncryptionServiceLabWork";
+        public static readonly string SocketHost = GetSetting("SocketHost");
+        public static readonly string SocketPort = GetSetting("SocketPort");
+        public static readonly string RpcQueueName = GetSetting("RpcQueueName");
+        public static readonly string MQUserName = GetSetting("MQUserName");
+        public static readonly string MQPassword = GetSetting("MQPassword");
+        public static readonly string MQVirtualHost = GetSetting("MQVirtualHost");
+        public static readonly string MQHostName = GetSetting("MQHostName");
+        public static readonly string MQPort = GetSetting("MQPort");
 
         public static ServerConnectionBase CreateServerConnection(ConnectionTypes conType)
         {
@@ -21,10 +27,10 @@ namespace MessageEncryptionService.Handlers.Connections
             switch (conType)
             {
                 case ConnectionTypes.Sockets:
-                    server = new SocketServer(DEF_HOST, DEF_PORT);
+                    server = new SocketServer(SocketHost, SocketPort);
                     break;
                 case ConnectionTypes.RabbitMQ:
-                    server = new MessageQueueServer();
+                    server = new MessageQueueServer(MQUserName, MQPassword, MQVirtualHost, MQHostName, MQPort, RpcQueueName);
                     break;
 
             }
@@ -37,13 +43,18 @@ namespace MessageEncryptionService.Handlers.Connections
             switch (conType)
             {
                 case ConnectionTypes.Sockets:
-                    client = new SocketClient(DEF_HOST, DEF_PORT);
+                    client = new SocketClient(SocketHost, SocketPort);
                     break;
                 case ConnectionTypes.RabbitMQ:
-                    client = new MessageQueueClient();
+                    client = new MessageQueueClient(MQUserName, MQPassword, MQVirtualHost, MQHostName, MQPort, RpcQueueName);
                     break;
             }
             return client;
+        }
+
+        public static string GetSetting(string key)
+        {
+            return ConfigurationManager.AppSettings[key];
         }
     }
 }

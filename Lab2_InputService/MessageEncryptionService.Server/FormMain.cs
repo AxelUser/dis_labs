@@ -17,7 +17,7 @@ namespace MessageEncryptionService.Server
 {
     public partial class FormMain : Form
     {
-        private ServerConnectionBase server;
+        private List<ServerConnectionBase> servers;
         public FormMain()
         {
             InitializeComponent();
@@ -25,9 +25,9 @@ namespace MessageEncryptionService.Server
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-            server = ConnectionFactory.CreateServerConnection(ConnectionTypes.Sockets);
-            server.NewMessage += Server_NewMessage;
-            server.StartServer();
+            servers = new List<ServerConnectionBase>();
+            servers.Add(CreateServer(ConnectionTypes.Sockets));
+            servers.Add(CreateServer(ConnectionTypes.RabbitMQ));
         }
 
         private void Server_NewMessage(object sender, MessageModel e)
@@ -37,7 +37,18 @@ namespace MessageEncryptionService.Server
 
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            server.StopServer();
+            foreach (var server in servers)
+            {
+                server.StopServer();
+            }
+        }
+        
+        private ServerConnectionBase CreateServer(ConnectionTypes type)
+        {
+            var server = ConnectionFactory.CreateServerConnection(type);
+            server.NewMessage += Server_NewMessage;
+            server.StartServer();
+            return server;
         }
     }
 }

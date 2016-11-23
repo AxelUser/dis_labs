@@ -23,13 +23,13 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private Dictionary<Guid, Task> activeConnectionListeners;
         private Dictionary<Guid, CancellationTokenSource> cancellationSourcesForListeners;
 
-        public SocketServer(string domain, int port, int maxConnections = 10): base()
+        public SocketServer(string domain, string port, int maxConnections = 10): base()
         {
             serverId = Guid.NewGuid();
             this.maxConnections = maxConnections;
             ctsMain = new CancellationTokenSource();
             IPAddress ipAdress = Dns.GetHostAddresses(domain).First();
-            listener = new TcpListener(ipAdress, port);
+            listener = new TcpListener(ipAdress, int.Parse(port));
             activeConnectionListeners = new Dictionary<Guid, Task>();
             cancellationSourcesForListeners = new Dictionary<Guid, CancellationTokenSource>();
         }
@@ -149,20 +149,37 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 BinaryReader reader = null;
                 BinaryWriter writer = null;
                 NetworkStream socketStream = null;
+                MessageModel response = null;
+                MessageModel request = null;
+
                 while (!ct.IsCancellationRequested)
                 {
                     try
                     {
-                        socketStream = clientToListen.GetStream();
-                        reader = new BinaryReader(socketStream, Encoding.UTF8, true);
-                        writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
-
-                        var reqRaw = reader.ReadString();
-                        MessageModel request = MessageCustomXmlConverter.ToModel(reqRaw);
-
-                        MessageModel response = MessageRouting(ref request, clientId);
-                        writer.Write(MessageCustomXmlConverter.ToXml(response));
-                        writer.Flush();                       
+                        var waitForData = new Task<string>(() => 
+                        {
+                            socketStream = clientToListen.GetStream();
+                            reader = new BinaryReader(socketStream, Encoding.UTF8, true);
+                            writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
+                            try
+                            {
+                                return reader.ReadString();
+                            }
+                            catch when (ct.IsCancellationRequested)
+                            {
+                                return null;
+                            }                            
+                        });
+                        waitForData.Start();
+                        waitForData.Wait(ct);
+                        if (waitForData.IsCompleted)
+                        {
+                            var reqRaw = waitForData.Result;
+                            request = MessageCustomXmlConverter.ToModel(reqRaw);
+                            response = MessageRouting(ref request, clientId);
+                            writer.Write(MessageCustomXmlConverter.ToXml(response));
+                            writer.Flush();
+                        }
                     }
                     catch(Exception e)
                     {
@@ -170,8 +187,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     }
                     finally
                     {
-                        reader?.Close();
-                        writer?.Close();
+                        //reader?.Close();
+                        //writer?.Close();
                     }
                 }
                 socketStream.Close();

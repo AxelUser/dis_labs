@@ -16,11 +16,23 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         IModel mqChannel;
         EventingBasicConsumer mqConsumer;
         string callbackQueue;
-        string rpcQueueName = "rpc_queue";
         Dictionary<Guid, ReplyModel> pendingRequests;
 
-        public MessageQueueClient()
+        string rpcQueueName;
+        string userName;
+        string password;
+        string virtualHost;
+        string hostName;
+        int port;
+
+        public MessageQueueClient(string userName, string password, string virtualHost, string hostName, string port, string rpcQueueName): base()
         {
+            this.userName = userName;
+            this.password = password;
+            this.virtualHost = virtualHost;
+            this.hostName = hostName;
+            this.port = int.Parse(port);
+            this.rpcQueueName = rpcQueueName;
             pendingRequests = new Dictionary<Guid, ReplyModel>();
         }
 
@@ -58,11 +70,12 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             byte[] requestBody = Encoding.UTF8.GetBytes(MessageCustomXmlConverter.ToXml(request));
             var requestProps = mqChannel.CreateBasicProperties();
             requestProps.CorrelationId = request.TicketId.ToString();
-            requestProps.ReplyTo = callbackQueue;
+            requestProps.ReplyTo = callbackQueue;            
             await Task.Run(() =>
             {
                 mqChannel.BasicPublish(exchange: "",
                     routingKey: rpcQueueName,
+                    mandatory: true,
                     basicProperties: requestProps,
                     body: requestBody);
             });
@@ -73,10 +86,17 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
                 {
                     lock (pendingRequests)
                     {
-                        var response = pendingRequests[(Guid)request.TicketId];
-                        if (response != null)
+                        if (pendingRequests.ContainsKey(request.TicketId))
                         {
-                            return response;
+                            var response = pendingRequests[request.TicketId];
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                        }
+                        else
+                        {
+                            return null;
                         }
                     }
                 }
@@ -95,6 +115,12 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             };
             mqConnection = mqConnectionFactory.CreateConnection();
             mqChannel = mqConnection.CreateModel();
+
+            mqChannel.BasicReturn += (s, ea) =>
+            {
+                Guid ticketId = Guid.Parse(ea.BasicProperties.CorrelationId);
+                pendingRequests.Remove(ticketId);
+            };
         }
 
         private void InitializeQueue(IModel channel)
@@ -104,7 +130,7 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         }
 
         private void InitializeConsumer(IModel channel)
-        {
+        {            
             mqConsumer = new EventingBasicConsumer(channel);
 
             mqConsumer.Received += (ch, ea) =>
