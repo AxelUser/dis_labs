@@ -54,7 +54,7 @@ namespace MessageEncryptionService.Handlers.Connections
                         {
                             SenderId = sender,
                             IsBodyEncrypted = false,
-                            Body = "Завершение соединения подтверждено."
+                            Body = "Connection closing confirmed."
                         };
                         break;
                     case Types.MessageTypes.SendData:
@@ -63,7 +63,7 @@ namespace MessageEncryptionService.Handlers.Connections
                         {
                             SenderId = sender,
                             IsBodyEncrypted = false,
-                            Body = "Данные добавлены."
+                            Body = "Data is adding."
                         };
                         break;
                     default:
@@ -87,9 +87,10 @@ namespace MessageEncryptionService.Handlers.Connections
             };
         }
 
-        public void AddData(MessageModel message, Guid client)
+        public async void AddData(MessageModel message, Guid client)
         {
-
+            var data = DataTransformHandler.FromXML(message.Body);
+            await DataTransformHandler.SaveToDb(data);
         }
 
         protected void OnNewMessage(MessageModel message)

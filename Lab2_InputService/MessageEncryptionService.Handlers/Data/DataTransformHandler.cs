@@ -12,18 +12,22 @@ namespace MessageEncryptionService.Handlers.Data
 {
     public class DataTransformHandler
     {
-        public static TaskInfoViewModel FromXML(string xml)
+        public static TaskInfoViewModel[] FromXML(string xml)
         {
-            var formatter = new XmlSerializer(typeof(TaskInfoViewModel));
-            using(StringReader sr = new StringReader(xml))
+            if (!string.IsNullOrEmpty(xml))
             {
-                return (TaskInfoViewModel)formatter.Deserialize(sr);
+                var formatter = new XmlSerializer(typeof(TaskInfoViewModel[]));
+                using (StringReader sr = new StringReader(xml))
+                {
+                    return (TaskInfoViewModel[])formatter.Deserialize(sr);
+                }
             }
+            return new TaskInfoViewModel[0];
         }
 
-        public static string ToXML(TaskInfoViewModel model)
+        public static string ToXML(TaskInfoViewModel[] model)
         {
-            var formatter = new XmlSerializer(typeof(TaskInfoViewModel));
+            var formatter = new XmlSerializer(typeof(TaskInfoViewModel[]));
             using (StringWriter sw = new StringWriter())
             {
                 formatter.Serialize(sw, model);
@@ -31,43 +35,47 @@ namespace MessageEncryptionService.Handlers.Data
             }
         }
 
-        public static async void SaveToDb(TaskInfoViewModel model)
+        public static async Task SaveToDb(IEnumerable<TaskInfoViewModel> models)
         {
             using(TaskManagerContext db = new TaskManagerContext())
             {
-                PlannedTask task = new PlannedTask()
+                foreach (var model in models)
                 {
-                    Title = model.Title,
-                    Description = model.Description,
-                    CreationDate = model.CreationDate,
-                    UpdateDate = model.UpdateDate,
-                    EstimatedCompletionDate = model.EstimatedCompletionDate,
-                    EstimatedDifficulty = model.EstimatedDifficulty
-                };
-                db.PlannedTasks.Add(task);
-                await db.SaveChangesAsync();
-
-                var existedTags = await db.Tags.Include(t=>t.PlannedTasks)
-                    .Where(t => model.Tags.Contains(t.Name)).ToListAsync();
-                var newTags = model.Tags.Where(t => !existedTags.Select(g => g.Name).Contains(t)).ToList();
-                foreach(var tag in newTags)
-                {
-                    Tag newTag = new Tag()
+                    PlannedTask task = new PlannedTask()
                     {
-                        Name = tag
+                        Title = model.Title,
+                        Description = model.Description,
+                        CreationDate = model.CreationDate,
+                        UpdateDate = model.UpdateDate,
+                        EstimatedCompletionDate = model.EstimatedCompletionDate,
+                        EstimatedDifficulty = model.EstimatedDifficulty
                     };
-                    newTag.PlannedTasks.Add(task);
-                    db.PlannedTasks.Add(task);                    
+
+                    var tag = await db.Tags.Include(t => t.PlannedTasks)
+                        .SingleOrDefaultAsync(t => model.Tag == t.Name);
+                    if(tag == null)
+                    {
+                        tag = new Tag()
+                        {
+                            Name = model.Tag
+                        };
+                    }
+                    task.Tag = tag;
+
+                    var user = await db.Users.SingleOrDefaultAsync(u => u.Login == model.ExecutorLogin);
+                    if (user == null)
+                    {
+                        user = new User()
+                        {
+                            Login = model.ExecutorLogin,
+                            FullName = model.ExecutorFullName
+                        };
+                    }
+                    task.Executor = user;
+
+                    db.PlannedTasks.Add(task);
+                    await db.SaveChangesAsync();
                 }
-                var user = await db.Users.SingleOrDefaultAsync(u => u.Login == model.ExecutorLogin);
-                //if (user != null)
-                //{
-                //    user = new User()
-                //    {
-                //        Login = 
-                //    }
-                //}
-                db.SaveChanges();
             }
         }
     }

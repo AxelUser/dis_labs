@@ -11,6 +11,10 @@ using MessageEncryptionService.Handlers.Connections;
 using MessageEncryptionService.Handlers.Connections.Types;
 using MessageEncryptionService.Handlers.Connections.Messages;
 using MessageEncryptionService.Handlers.Helpers;
+using MessageEncryptionService.Handlers.Data;
+using System.IO;
+using CsvHelper;
+
 namespace MessageEncryptionService.Client
 {
     public partial class FormMain : Form
@@ -23,13 +27,30 @@ namespace MessageEncryptionService.Client
 
         private async void btnSend_Click(object sender, EventArgs e)
         {
-            string msgText = "Проверка.";
-            MessageModel data = new MessageModel(MessageTypes.SendData)
+            OpenFileDialog openFile = new OpenFileDialog();
+            if (openFile.ShowDialog() == DialogResult.OK)
             {
-                Body = msgText
-            };
-            var resp = await GetSelectedClient().Send(data);
-            HandleResponse(resp);
+                List<TaskInfoViewModel> tasksFromCsv = new List<TaskInfoViewModel>();
+                using(StreamReader sr = new StreamReader(openFile.FileName))
+                {
+                    CsvReader csvReader = new CsvReader(sr);
+                    tasksFromCsv.AddRange(csvReader.GetRecords<TaskInfoViewModel>());
+                }
+                if (tasksFromCsv.Count > 0)
+                {
+                    string serializedData = DataTransformHandler.ToXML(tasksFromCsv.ToArray());
+                    MessageModel data = new MessageModel(MessageTypes.SendData)
+                    {
+                        Body = serializedData
+                    };
+                    var resp = await GetSelectedClient().Send(data);
+                    HandleResponse(resp);
+                }
+                else
+                {
+                    MessageBox.Show("File does not contains propper data.");
+                }
+            }
         }
 
         private async void FormMain_Load(object sender, EventArgs e)

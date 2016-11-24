@@ -107,11 +107,11 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
         {
             mqConnectionFactory = new RabbitMQ.Client.ConnectionFactory()
             {
-                UserName = "guest",
-                Password = "guest",
-                VirtualHost = "/",
-                HostName = "localhost",
-                Port = 5672
+                UserName = userName,
+                Password = password,
+                VirtualHost = virtualHost,
+                HostName = hostName,
+                Port = port
             };
             mqConnection = mqConnectionFactory.CreateConnection();
             mqChannel = mqConnection.CreateModel();
