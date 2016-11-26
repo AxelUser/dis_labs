@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageEncryptionService.Client", "MessageEncryptionService.Client\MessageEncryptionService.Client.csproj", "{EE878A7C-DF55-4E1D-83FC-B73864277C9F}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageEncryptionService.Server", "MessageEncryptionService.Server\MessageEncryptionService.Server.csproj", "{69634C6E-F79C-4803-AE5A-599BCE03E1FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageEncryptionService.Model", "MessageEncryptionService.Model\MessageEncryptionService.Model.csproj", "{9F372EC0-8F3A-4130-A326-AC146E380FA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageEncryptionService.Server.WinService", "MessageEncryptionService.Server.WinService\MessageEncryptionService.Server.WinService.csproj", "{AE4F0D72-5F69-4B6B-BC1F-AE493081123D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE4F0D72-5F69-4B6B-BC1F-AE493081123D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE4F0D72-5F69-4B6B-BC1F-AE493081123D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE4F0D72-5F69-4B6B-BC1F-AE493081123D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE4F0D72-5F69-4B6B-BC1F-AE493081123D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
