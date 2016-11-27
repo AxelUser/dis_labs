@@ -1,6 +1,6 @@
 ﻿namespace MessageEncryptionService.Server.WinService
 {
-    partial class InputService
+    partial class InputServiceForRabbitMQ
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            this.ServiceName = "Service1";
+            this.ServiceName = "InputServiceForRabbitMQ";
         }
 
         #endregion

@@ -14,7 +14,8 @@ namespace MessageEncryptionService.Server.WinService
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]
             {
-                new InputService()
+                new InputServiceForSockets(),
+                new InputServiceForRabbitMQ()
             };
             ServiceBase.Run(ServicesToRun);
         }

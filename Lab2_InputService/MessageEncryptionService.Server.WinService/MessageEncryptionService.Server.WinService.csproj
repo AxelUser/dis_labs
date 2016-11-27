@@ -44,17 +44,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InputService.cs">
+    <Compile Include="InputServiceForRabbitMQ.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="InputService.Designer.cs">
-      <DependentUpon>InputService.cs</DependentUpon>
+    <Compile Include="InputServiceForRabbitMQ.Designer.cs">
+      <DependentUpon>InputServiceForRabbitMQ.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputServiceForSockets.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="InputServiceForSockets.Designer.cs">
+      <DependentUpon>InputServiceForSockets.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MessageEncryptionService.Handlers\MessageEncryptionService.Handlers.csproj">
+      <Project>{128ae24e-1d4c-489c-8bfd-3810c277aa95}</Project>
+      <Name>MessageEncryptionService.Handlers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
