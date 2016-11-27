@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InputServiceBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="InputServiceForRabbitMQ.cs">
       <SubType>Component</SubType>
     </Compile>

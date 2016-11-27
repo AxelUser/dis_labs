@@ -20,10 +20,11 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract void DisconnectClient(Guid client);
 
         protected IProgress<MessageModel> onNewMessageHandler;
-        protected Guid serverId;
+        public Guid ServerId { get; private set; }
 
         public ServerConnectionBase()
         {
+            ServerId = Guid.NewGuid();
             onNewMessageHandler = new Progress<MessageModel>(m => NewMessage?.Invoke(this, m));
             encryptionHandler = new MessageEncryptionHandler(new AsymmetricEncryptionHandler());
         }
@@ -52,7 +53,6 @@ namespace MessageEncryptionService.Handlers.Connections
                         DisconnectClient(sender);
                         response = new ReplyModel(Types.MessageTypes.CloseConnection)
                         {
-                            SenderId = sender,
                             IsBodyEncrypted = false,
                             Body = "Connection closing confirmed."
                         };
@@ -61,20 +61,19 @@ namespace MessageEncryptionService.Handlers.Connections
                         AddData(message, sender);
                         response = new ReplyModel(Types.MessageTypes.SendData)
                         {
-                            SenderId = sender,
                             IsBodyEncrypted = false,
                             Body = "Data is adding."
                         };
                         break;
                     default:
-                        response = null;
-                        break;
+                        return null;
                 }
                 if(notify)
                 {
                     OnNewMessage(message);
                 }     
                 response.TicketId = message.TicketId;
+                response.SenderId = ServerId;
                 return response;
             }
         }

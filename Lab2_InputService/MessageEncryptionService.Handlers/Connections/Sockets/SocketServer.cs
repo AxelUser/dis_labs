@@ -25,7 +25,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
 
         public SocketServer(string domain, string port, int maxConnections = 10): base()
         {
-            serverId = Guid.NewGuid();
             this.maxConnections = maxConnections;
             ctsMain = new CancellationTokenSource();
             IPAddress ipAdress = IPAddress.Parse(domain);

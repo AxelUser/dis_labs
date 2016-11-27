@@ -12,17 +12,16 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Server.WinService
 {
-    public partial class InputServiceForSockets : ServiceBase
+    public partial class InputServiceForSockets : InputServiceBase
     {
-        ServerConnectionBase server;
         public InputServiceForSockets()
         {
             InitializeComponent();
+            server = ConnectionFactory.CreateServerConnection(ConnectionTypes.Sockets);
         }
 
         protected override void OnStart(string[] args)
         {
-            server = ConnectionFactory.CreateServerConnection(ConnectionTypes.Sockets);            
             server.StartServer();            
         }
 

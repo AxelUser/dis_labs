@@ -11,13 +11,33 @@ namespace MessageEncryptionService.Server.WinService
     {
         static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            InputServiceForRabbitMQ serviceRabbitMQ = new InputServiceForRabbitMQ();
+            InputServiceForSockets serviceSockets = new InputServiceForSockets();
+
+            if (Environment.UserInteractive)
             {
-                new InputServiceForSockets(),
-                new InputServiceForRabbitMQ()
-            };
-            ServiceBase.Run(ServicesToRun);
+                serviceRabbitMQ.StartInteractiveMode();
+            }
+            else
+            {
+                ServiceBase[] ServicesToRun;
+                ServicesToRun = new ServiceBase[]
+                {
+                    serviceSockets,
+                    serviceRabbitMQ
+                };
+                ServiceBase.Run(ServicesToRun);
+            }
+        }
+
+        static void StartInteractive()
+        {
+
+        }
+
+        static void StopInteractive()
+        {
+
         }
     }
 }

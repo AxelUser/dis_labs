@@ -12,17 +12,16 @@ using System.Threading.Tasks;
 
 namespace MessageEncryptionService.Server.WinService
 {
-    partial class InputServiceForRabbitMQ : ServiceBase
+    partial class InputServiceForRabbitMQ : InputServiceBase
     {
-        ServerConnectionBase server;
         public InputServiceForRabbitMQ()
         {
             InitializeComponent();
+            server = ConnectionFactory.CreateServerConnection(ConnectionTypes.RabbitMQ);
         }
 
         protected override void OnStart(string[] args)
         {
-            server = ConnectionFactory.CreateServerConnection(ConnectionTypes.RabbitMQ);
             server.StartServer();
         }
 

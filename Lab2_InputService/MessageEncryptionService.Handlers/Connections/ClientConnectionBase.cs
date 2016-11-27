@@ -48,7 +48,10 @@ namespace MessageEncryptionService.Handlers.Connections
         public abstract Task<ReplyModel> Send(MessageModel message, bool encrypted = true);
         public async Task<ReplyModel> AskAsymKey()
         {
-            MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey);
+            MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey)
+            {
+                SenderId = clientId
+            };
             ReplyModel response = await Send(request, false);
             string key = response.Body;
             InitEncryptionHandler(key);

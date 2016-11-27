@@ -65,7 +65,6 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                     {
                         writer = new BinaryWriter(socketStream, Encoding.UTF8, true);
                         reader = new BinaryReader(socketStream, Encoding.UTF8, true);
-                        message.SenderId = clientId;
 
                         MessageModel request = PrepareMessage(message, encrypted);
                         await Task.Run(() => 
