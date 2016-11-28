@@ -8,9 +8,17 @@ using System.Xml.Linq;
 
 namespace MessageEncryptionService.Handlers.Connections.Messages
 {
+    /// <summary>
+    /// Custom serializer to xml.
+    /// </summary>
     public class MessageCustomXmlConverter
     {
         private static int formatVersion = 1;
+        /// <summary>
+        /// Serialize message to xml.
+        /// </summary>
+        /// <param name="message">Original message.</param>
+        /// <returns>Xml-string.</returns>
         public static string ToXml(MessageModel message)
         {          
             var root = new XElement("Message");
@@ -34,6 +42,11 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
             return xDoc.ToString();
         }
 
+        /// <summary>
+        /// Deserialize message from xml.
+        /// </summary>
+        /// <param name="xml">Serialized message.</param>
+        /// <returns>Deserialized message object.</returns>
         public static MessageModel ToModel(string xml)
         {
             XDocument xDoc = XDocument.Parse(xml);

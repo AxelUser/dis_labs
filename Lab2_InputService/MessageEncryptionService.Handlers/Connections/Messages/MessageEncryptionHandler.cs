@@ -7,6 +7,9 @@ using MessageEncryptionService.Handlers.Data;
 
 namespace MessageEncryptionService.Handlers.Connections.Messages
 {
+    /// <summary>
+    /// Provides high-level logic to encrypt or decrypt messages using both symmetrical and assymetrical methods.
+    /// </summary>
     public class MessageEncryptionHandler
     {
         AsymmetricEncryptionHandler asymHandler;

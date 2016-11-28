@@ -19,6 +19,13 @@ namespace MessageEncryptionService.Handlers.Connections
         {
             clientId = Guid.NewGuid();
         }
+
+        /// <summary>
+        /// Format message`s content before sending it to the server.
+        /// </summary>
+        /// <param name="message">Original message.</param>
+        /// <param name="encryprt">Encrypt message or not.</param>
+        /// <returns>Formatted message.</returns>
         protected MessageModel PrepareMessage(MessageModel message, bool encryprt)
         {
             message.SenderId = clientId;
@@ -31,28 +38,67 @@ namespace MessageEncryptionService.Handlers.Connections
             return newMessage;
         }
 
+        /// <summary>
+        /// Container method to firing NewMessage event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="message"></param>
         protected virtual void OnNewMessage(object sender, MessageModel message)
         {
             NewMessage?.Invoke(sender, message);
         }
 
+        /// <summary>
+        /// Container method to firing ConnectionError event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="exception"></param>
         protected virtual void OnConnectionError(object sender, Exception exception)
         {
             ConnectionError?.Invoke(sender, exception);
         }
 
+        /// <summary>
+        /// Flag, indicating whether connection to the server established or not.
+        /// </summary>
         public bool Connected { get; set; }
+
+        /// <summary>
+        /// Check connection to the server.
+        /// </summary>
+        /// <returns></returns>
         public abstract bool CheckConnection();
+
+        /// <summary>
+        /// Connect to the server.
+        /// </summary>
+        /// <returns>Is connection established or not.</returns>
         public abstract bool Connect();
+
+        /// <summary>
+        /// Close connection to the server.
+        /// </summary>
         public abstract void Disconnect();
-        public abstract Task<ReplyModel> Send(MessageModel message, bool encrypted = true);
-        public async Task<ReplyModel> AskAsymKey()
+
+        /// <summary>
+        /// Send message to the server and wait for reply.
+        /// </summary>
+        /// <param name="message">Request to the server.</param>
+        /// <param name="encrypted">Encrypt message or not.</param>
+        /// <returns>Server`s response.</returns>
+        public abstract Task<ReplyModel> SendAsync(MessageModel message, bool encrypted = true);
+
+        /// <summary>
+        /// Ask server for public part of asymmetric key.
+        /// </summary>
+        /// <returns>Message with public key.</returns>
+        public async Task<ReplyModel> AskAsymKeyAsync()
         {
             MessageModel request = new MessageModel(Types.MessageTypes.AskRSAKey)
             {
                 SenderId = clientId
             };
-            ReplyModel response = await Send(request, false);
+            ReplyModel response = await SendAsync(request, false);
             string key = response.Body;
             InitEncryptionHandler(key);
             return response;

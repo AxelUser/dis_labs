@@ -43,7 +43,7 @@ namespace MessageEncryptionService.Client
                     {
                         Body = serializedData
                     };
-                    var resp = await GetSelectedClient().Send(data);
+                    var resp = await GetSelectedClient().SendAsync(data);
                     HandleResponse(resp);
                 }
                 else
@@ -99,7 +99,7 @@ namespace MessageEncryptionService.Client
             }
             else
             {
-                var resp = await client.AskAsymKey();
+                var resp = await client.AskAsymKeyAsync();
                 HandleResponse(resp);
             }
             return client;

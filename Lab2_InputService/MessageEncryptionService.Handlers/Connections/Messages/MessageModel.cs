@@ -9,13 +9,41 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
 {
     public class MessageModel: ICloneable
     {
+        /// <summary>
+        /// Id for specific task. It helps clients to recieve relevant replies in their callbacks.
+        /// </summary>
         public Guid TicketId { get; set; }
+        
+        /// <summary>
+        /// Type of message.
+        /// </summary>
         public MessageTypes MessageType { get; private set; }
+
+        /// <summary>
+        /// Id of sender (client or server).
+        /// </summary>
         public Guid SenderId { get; set; }
+
+        /// <summary>
+        /// Flag, indicating whether message content-body is encrypted or not.
+        /// </summary>
         public bool IsBodyEncrypted { get; set; }
+
+        /// <summary>
+        /// Assymetrical key.
+        /// </summary>
         public string DESKey { get; set; }
+
+        /// <summary>
+        /// Assymetrical initiatiational vector.
+        /// </summary>
         public string DESIV { get; set; }
+
+        /// <summary>
+        /// Message`s content-body.
+        /// </summary>
         public string Body { get; set; }
+
         public MessageModel(MessageTypes type)
         {
             this.MessageType = type;

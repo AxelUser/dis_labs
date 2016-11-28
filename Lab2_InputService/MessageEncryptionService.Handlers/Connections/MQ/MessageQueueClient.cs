@@ -64,7 +64,7 @@ namespace MessageEncryptionService.Handlers.Connections.MQ
             mqConnection.Close();
         }
 
-        public override async Task<ReplyModel> Send(MessageModel message, bool encrypted = true)
+        public override async Task<ReplyModel> SendAsync(MessageModel message, bool encrypted = true)
         {
             MessageModel request = PrepareMessage(message, encrypted);
             byte[] requestBody = Encoding.UTF8.GetBytes(MessageCustomXmlConverter.ToXml(request));

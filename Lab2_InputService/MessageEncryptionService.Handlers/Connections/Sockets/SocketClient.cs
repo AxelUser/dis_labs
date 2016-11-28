@@ -52,7 +52,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
             return Connected; //пока оставлю заглушку
         }        
 
-        public override async Task<ReplyModel> Send(MessageModel message, bool encrypted = true)
+        public override async Task<ReplyModel> SendAsync(MessageModel message, bool encrypted = true)
         {
             ReplyModel response = null;
             if (CheckConnection())

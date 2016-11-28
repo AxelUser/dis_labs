@@ -9,6 +9,9 @@ namespace MessageEncryptionService.Handlers.Connections.Messages
 {
     public class ReplyModel: MessageModel
     {
+        /// <summary>
+        /// The type of a message, for which this reply was made.
+        /// </summary>
         public MessageTypes ReplyType { get; set; }
         public ReplyModel(MessageTypes replyType) : base(MessageTypes.Reply)
         {
