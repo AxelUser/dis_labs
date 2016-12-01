@@ -26,13 +26,35 @@ namespace MessageEncryptionService.Server
         private void FormMain_Load(object sender, EventArgs e)
         {
             servers = new List<ServerConnectionBase>();
-            servers.Add(CreateServer(ConnectionTypes.Sockets));
-            servers.Add(CreateServer(ConnectionTypes.RabbitMQ));
+            try
+            {
+                servers.Add(CreateServer(ConnectionTypes.Sockets));
+                AddMessage($"Server {ConnectionTypes.Sockets} created.");
+            }
+            catch
+            {
+                AddMessage($"Server {ConnectionTypes.Sockets} failed.");
+            }
+
+            try
+            {
+                servers.Add(CreateServer(ConnectionTypes.RabbitMQ));
+                AddMessage($"Server {ConnectionTypes.RabbitMQ} created.");
+            }
+            catch
+            {
+                AddMessage($"Server {ConnectionTypes.RabbitMQ} failed.");
+            }
         }
 
         private void Server_NewMessage(object sender, MessageModel e)
         {
-            listBoxLogs.Items.Add($"{e.SenderId}: {e.MessageType.GetTypeCaption()}");
+            AddMessage($"{e.SenderId}: {e.MessageType.GetTypeCaption()}");
+        }
+
+        private void AddMessage(string text)
+        {
+            listBoxLogs.Items.Add(text);
         }
 
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)

@@ -18,9 +18,10 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         private IPAddress ipAdress;      
         int port;
 
-        public SocketClient(string ip, string port): base()
+        public SocketClient(string domain, string port): base()
         {
-            ipAdress = IPAddress.Parse(ip);
+            var addresses = Dns.GetHostAddresses(domain);
+            ipAdress = addresses.First(a=>a.AddressFamily == AddressFamily.InterNetwork);
             var s = ipAdress.ToString();
             client = new TcpClient();
             this.port = int.Parse(port);
@@ -33,7 +34,7 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
                 client.Connect(ipAdress, port);                
                 Connected = true;                
             }
-            catch
+            catch(Exception e)
             {
                 Connected = false;
             }

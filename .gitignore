@@ -250,3 +250,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+/Lab2_InputService/MessageEncryptionService.Server/db.config
+/Lab2_InputService/MessageEncryptionService.Model/db.config

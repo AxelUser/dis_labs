@@ -27,7 +27,8 @@ namespace MessageEncryptionService.Handlers.Connections.Sockets
         {
             this.maxConnections = maxConnections;
             ctsMain = new CancellationTokenSource();
-            IPAddress ipAdress = IPAddress.Parse(domain);
+            var addresses = Dns.GetHostAddresses(domain);
+            IPAddress ipAdress = addresses.First(a => a.AddressFamily == AddressFamily.InterNetwork);
             listener = new TcpListener(ipAdress, int.Parse(port));
             activeConnectionListeners = new Dictionary<Guid, Task>();
             cancellationSourcesForListeners = new Dictionary<Guid, CancellationTokenSource>();

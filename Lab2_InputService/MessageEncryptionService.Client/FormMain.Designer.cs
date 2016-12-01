@@ -48,6 +48,7 @@
             // radioButtonSockets
             // 
             this.radioButtonSockets.AutoSize = true;
+            this.radioButtonSockets.Checked = true;
             this.radioButtonSockets.Location = new System.Drawing.Point(6, 19);
             this.radioButtonSockets.Name = "radioButtonSockets";
             this.radioButtonSockets.Size = new System.Drawing.Size(64, 17);
@@ -63,7 +64,6 @@
             this.radioButtonRabbitMQ.Name = "radioButtonRabbitMQ";
             this.radioButtonRabbitMQ.Size = new System.Drawing.Size(73, 17);
             this.radioButtonRabbitMQ.TabIndex = 2;
-            this.radioButtonRabbitMQ.TabStop = true;
             this.radioButtonRabbitMQ.Text = "RabbitMQ";
             this.radioButtonRabbitMQ.UseVisualStyleBackColor = true;
             // 
