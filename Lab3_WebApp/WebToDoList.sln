@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebToDoList", "WebToDoList\WebToDoList.csproj", "{E416C1DC-E162-4245-9C9A-3DE8603A7EB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageEncryptionService.Model", "..\Lab2_InputService\MessageEncryptionService.Model\MessageEncryptionService.Model.csproj", "{9F372EC0-8F3A-4130-A326-AC146E380FA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{E416C1DC-E162-4245-9C9A-3DE8603A7EB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E416C1DC-E162-4245-9C9A-3DE8603A7EB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E416C1DC-E162-4245-9C9A-3DE8603A7EB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F372EC0-8F3A-4130-A326-AC146E380FA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
