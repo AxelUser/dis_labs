@@ -252,3 +252,4 @@ paket-files/
 *.sln.iml
 /Lab2_InputService/MessageEncryptionService.Server/db.config
 /Lab2_InputService/MessageEncryptionService.Model/db.config
+/Lab3_WebApp/WebToDoList/db.config

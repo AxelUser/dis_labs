@@ -40,7 +40,7 @@ namespace WebToDoList.Models
                 var tagQuery = db.Tags.AsQueryable();
                 if(model.TagId != null)
                 {
-                    tagQuery = tagQuery.(tg => tg.Id == model.TagId);
+                    tagQuery = tagQuery.Where(tg => tg.Id == model.TagId);
                 }
                 else
                 {
