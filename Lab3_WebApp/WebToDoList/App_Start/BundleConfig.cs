@@ -19,6 +19,10 @@ namespace WebToDoList
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.js",
                       "~/Scripts/respond.js"));
+            bundles.Add(new ScriptBundle("~/bundles/view-models").Include(
+                "~/Scripts/vue.js",
+                "~/Scripts/progressbar.min.js",
+                "~/Scripts/TaskInfo/tasks-vue-model.js"));
             
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
