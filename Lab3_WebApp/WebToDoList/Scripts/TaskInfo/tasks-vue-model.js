@@ -1,5 +1,4 @@
 ﻿function TaskViewModel(title) {
-    this.checked = false;
     this.taskId = null;
     this.title = title;
     this.tagId = null;
@@ -25,31 +24,64 @@ var app = new Vue({
         age: 0,
         title: null,
         tableCaption: null,
-        tasks: [new TaskViewModel("New Task1"), new TaskViewModel("New Task2"), new TaskViewModel("New Task3"), new TaskViewModel("New Task4")]        
+        tasks: [],
+        taskCounter: 0
     },
     methods:{
-        renderProgressBar: function (percent) {
+        loadTasks: function () {
+            this.tasks = [new TaskViewModel("New Task1"), new TaskViewModel("New Task2"), new TaskViewModel("New Task3"), new TaskViewModel("New Task4")]
+        },
+        incCounter: function () {
+            app.taskCounter++;
+        },
+        decCounter: function () {
+            if (app.taskCounter > 0) {
+                app.taskCounter--;
+            }
         }
+    },
+    computed:{
+        completePercent: function () {
+            if (this.taskCounter !== 0 && this.tasks.length != 0) {
+                return Math.round(this.taskCounter / this.tasks.length * 100);
+            }
+            return 0;
+        }
+    },
+    mounted: function(){
+        this.loadTasks();
+        
     },
     components: {
         'task-row': {
             template: '#task-row-template',
             props: ['task'],
+            data: function(){
+                return {
+                    isChecked: false
+                }
+            },
+            watch: {
+                isChecked: function (check) {
+                    if (check) {
+                        this.$parent.$options.methods.incCounter();
+                    } else {
+                        this.$parent.$options.methods.decCounter();
+                    }
+                }
+            },
             computed: {
-                "isChecked": function(){
-                    return this.task.isChecked
+                title: function () {
+                    return this.task.title;
                 },
-                "title": function () {
-                    return this.task.title
+                createdOn: function () {
+                    return new Date(this.task.created);
                 },
-                "createdOn": function () {
-                    return new Date(this.task.created)
+                estDate: function () {
+                    new Date(this.task.estimatedCompletionDate);
                 },
-                "estDate": function () {
-                    new Date(this.task.estimatedCompletionDate)
-                },
-                "daysRemain": function () {
-                    return daysDiff(this.task.created, this.task.estimatedCompletionDate)
+                daysRemain: function () {
+                    return daysDiff(this.task.created, this.task.estimatedCompletionDate);
                 }
             }
         }
