@@ -25,10 +25,11 @@ var app = new Vue({
         title: null,
         tableCaption: null,
         tasks: [],
-        taskCounter: 0
+        taskCounter: 0,        
+        loading: false
     },
     methods:{
-        loadTasks: function () {
+        loadTasks: function () {            
             this.tasks = [new TaskViewModel("New Task1"), new TaskViewModel("New Task2"), new TaskViewModel("New Task3"), new TaskViewModel("New Task4")]
         },
         incCounter: function () {
