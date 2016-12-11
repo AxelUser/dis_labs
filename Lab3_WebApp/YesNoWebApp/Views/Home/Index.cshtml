@@ -1,0 +1,52 @@
+﻿<div id="app" class="bg-base" :style="bgStyle">
+    <h1 v-show="answer!=null">{{answer}}</h1>
+    <input placeholder="Ask me (yes/no question) and press ENTER" class="user-msg-wrapper" v-model="message" v-on:keyup.enter="sendMessage">
+</div>
+
+@section scripts {
+<script type="text/javascript">
+    var app = new Vue({
+            el:"#app",
+            data:{
+            gif: null,
+            answer: null,
+            api: "@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "values"})",
+            message: "",
+            isLoading: "true"
+        },
+        computed:{
+            bgStyle: function(){
+                if(this.gif != null && this.gif != ""){
+                return {
+                    'background-image': 'url(' + this.gif + ')'
+                }
+                } else {
+                return {}
+                }
+            }
+        },
+        methods:{
+            sendMessage: function () {
+                var data = {
+                    MessageText: this.message,
+                    ClientDate: Date.now()
+                }
+                this.$http.post(this.api, function(){
+                    this.loading = true;
+                }).then(function(sucResp){
+                    var obj = sucResp.body;
+                    this.answer = obj.answer;
+                    this.gif = obj.image;
+                    this.loading = false;
+                }, function(errResp){
+                    console.log("Error: "+errResp.statusText)
+                    this.loading = false;
+                })
+            }
+        },
+        mounted: function(){
+            //this.sendMessage();
+        }
+    });
+</script>
+}
