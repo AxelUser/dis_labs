@@ -12,37 +12,32 @@ namespace YesNoWebApp.Controllers
 {
     public class ValuesController : ApiController
     {
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         // POST api/values
         public async Task<AnswerModel> Post([FromBody] MessageModel message)
         {
-            using (HttpClient client = new HttpClient())
+            if (!string.IsNullOrEmpty(message?.MessageText?.Trim()))
             {
-                string answerRaw = await client.GetStringAsync("https://yesno.wtf/api");
-                var answerModel = JsonConvert.DeserializeObject<AnswerModel>(answerRaw);
-                return answerModel;
+                if (!message.MessageText.TrimEnd().Contains("?"))
+                {
+                    return new AnswerModel()
+                    {
+                        Error = "LOL, questions must contains question marks, bro!"
+                    };
+                }
+                using (HttpClient client = new HttpClient())
+                {
+                    string answerRaw = await client.GetStringAsync("https://yesno.wtf/api");
+                    var answerModel = JsonConvert.DeserializeObject<AnswerModel>(answerRaw);
+                    return answerModel;
+                }
             }
-        }
-
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
+            else
+            {
+                return new AnswerModel()
+                {
+                    Error = "Question is not valid, dude!"
+                };
+            }
         }
     }
 }

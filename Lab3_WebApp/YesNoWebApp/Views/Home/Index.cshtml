@@ -11,7 +11,8 @@
             gif: null,
             answer: null,
             api: "@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "values"})",
-            message: "",
+            oldMessage: null,
+            message: null,
             isLoading: "true"
         },
         computed:{
@@ -27,21 +28,29 @@
         },
         methods:{
             sendMessage: function () {
-                var data = {
-                    MessageText: this.message,
-                    ClientDate: Date.now()
+                if (this.oldMessage !== this.message && this.message != null) {
+                    var data = {
+                        MessageText: this.message,
+                        ClientDate: new Date()
+                    }
+                    this.oldMessage = this.message;
+                    this.message = null;
+                    this.$http.post(this.api, data, function () {
+                        this.loading = true;
+                    }).then(function (sucResp) {                      
+                        var obj = sucResp.body;
+                        if (obj.Error == null) {
+                            this.answer = obj.Answer;
+                            this.gif = obj.Image;
+                            this.loading = false;
+                        } else {
+                            alert(obj.Error)
+                        }
+                    }, function (errResp) {
+                        console.log("Error: " + errResp.statusText)
+                        this.loading = false;
+                    })
                 }
-                this.$http.post(this.api, function(){
-                    this.loading = true;
-                }).then(function(sucResp){
-                    var obj = sucResp.body;
-                    this.answer = obj.answer;
-                    this.gif = obj.image;
-                    this.loading = false;
-                }, function(errResp){
-                    console.log("Error: "+errResp.statusText)
-                    this.loading = false;
-                })
             }
         },
         mounted: function(){
